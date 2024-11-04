@@ -109,7 +109,21 @@ namespace weather_app.Services
             }
         }
 
+        public bool HasDataFromProvider(string provider)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+                string query = $"SELECT COUNT(*) FROM weather_data WHERE provider = @provider";
 
+                using (var command = new NpgsqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@provider", provider);
 
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+        }
     }
 }
