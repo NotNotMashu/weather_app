@@ -31,6 +31,16 @@ namespace weather_app.Services
         }
 
 
+        public List<Tuple<double, double>> Coordinates { get; private set; }
+        private readonly HttpClient _httpClient;
+        private static string openMeteoCurrent = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
+        public ApiService()
+        {
+            _httpClient = new HttpClient();
+            Coordinates = new List<Tuple<double, double>>();
+            InitializeCoordinates();
+        }
+
         public async Task<string> GetWeatherDataAsync(string url)
         {
             try
@@ -83,6 +93,14 @@ namespace weather_app.Services
         //Database and stuff
 
         /*public async void CallApi(DbHandler _dbHandler, string tablename)
+
+                Console.WriteLine($"Request error: {e.Message}");
+                return "Error: Unable to retrieve weather data. Please check the connection.";
+            }
+        }
+
+        public async void CallApi(DbHandler _dbHandler, string tablename)
+
         {
             for (int year = 2010; year < 2025; year++)
             {
@@ -108,6 +126,14 @@ namespace weather_app.Services
             }
         }
 
+        private void InitializeCoordinates()
+        {
+            Coordinates.Add(new Tuple<double, double>(52.52, 13.41));
+            Coordinates.Add(new Tuple<double, double>(48.8566, 2.3522));
+            Coordinates.Add(new Tuple<double, double>(51.5074, -0.1278));
+
+        }
+
         public async Task<CurrentWeatherData> GetWeatherDataFromProviderAsync(string provider)
         {
             string apiUrl = string.Empty;
@@ -126,7 +152,12 @@ namespace weather_app.Services
                 case "open-meteo":
                     apiUrl = "https://api.open-meteo.com/v1/forecast?latitude="+latitude+"&longitude="+longitude+"&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
                     break;
+
                 case "provider2":
+                    apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
+                    break;
+
+                /*case "provider2":
                     apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
                     break;
                 default:
@@ -154,6 +185,7 @@ namespace weather_app.Services
                 Console.WriteLine($"Hiba történt az API hívás során: {ex.Message}");
                 return new CurrentWeatherData(); // Üres
             }
+
         }*/
     }
 }
