@@ -10,11 +10,27 @@ using System.Windows;
 using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static System.Net.WebRequestMethods;
+using System.Collections;
 
 namespace weather_app.Services
 {
     public class ApiService
     {
+        private readonly HttpClient _httpClient;
+        private readonly XmlDataHandler _xmlHandler;
+        public ApiService()
+        {
+            _httpClient = new HttpClient();
+            _xmlHandler = new XmlDataHandler("weather_data.xml");
+        }
+
+        public class WeatherDataCollection
+        {
+            public List<WeatherData> WeatherDataList { get; set; }
+        }
+
+
         public List<Tuple<double, double>> Coordinates { get; private set; }
         private readonly HttpClient _httpClient;
         private static string openMeteoCurrent = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
@@ -35,12 +51,56 @@ namespace weather_app.Services
             }
             catch (HttpRequestException e)
             {
+                //MessageBox.Show($"Request error: {e.Message} url: {url}");
+                return "Error: Unable to retrieve weather data. Please check the connection.";
+            }
+        }
+        }
+        public async Task FetchAndStoreHistoricalWeatherData(string provider, double latitude, double longitude, int year)
+        {
+            string apiUrl = $"https://archive-api.open-meteo.com/v1/archive?latitude={latitude}&longitude={longitude}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation";
+            string apiUrl2 = $"https://archive-api.open-meteo.com/v1/archive?latitude=" + latitude + "&longitude=" + longitude + "&start_date=" + year + "-08-25&end_date=" + year + "-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation";
+
+            try
+            {
+                string jsonResponse = await GetWeatherDataAsync(apiUrl2);
+
+                if (!jsonResponse.StartsWith("Error:"))
+                {
+                    List<WeatherData> weatherDataList = JsonConvert.DeserializeObject<List<WeatherData>>(jsonResponse);
+
+                    foreach (var weatherData in weatherDataList)
+                    {
+                        _xmlHandler.AppendHistoricalWeatherData(provider, latitude, longitude, weatherData);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Error in fetching historical weather data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error processing historical API response: {ex.Message}");
+            }
+        }
+
+
+
+
+
+
+        //Database and stuff
+
+        /*public async void CallApi(DbHandler _dbHandler, string tablename)
+
                 Console.WriteLine($"Request error: {e.Message}");
                 return "Error: Unable to retrieve weather data. Please check the connection.";
             }
         }
 
         public async void CallApi(DbHandler _dbHandler, string tablename)
+
         {
             for (int year = 2010; year < 2025; year++)
             {
@@ -65,6 +125,7 @@ namespace weather_app.Services
                 }
             }
         }
+
         private void InitializeCoordinates()
         {
             Coordinates.Add(new Tuple<double, double>(52.52, 13.41));
@@ -91,9 +152,14 @@ namespace weather_app.Services
                 case "open-meteo":
                     apiUrl = "https://api.open-meteo.com/v1/forecast?latitude="+latitude+"&longitude="+longitude+"&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
                     break;
+
+                case "provider2":
+                    apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
+                    break;
+
                 /*case "provider2":
                     apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
-                    break;*/
+                    break;
                 default:
                     throw new ArgumentException("Ismeretlen szolgáltató: " + provider);
             }
@@ -119,7 +185,7 @@ namespace weather_app.Services
                 Console.WriteLine($"Hiba történt az API hívás során: {ex.Message}");
                 return new CurrentWeatherData(); // Üres
             }
-        }
 
+        }*/
     }
 }
