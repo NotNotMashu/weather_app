@@ -81,7 +81,14 @@ namespace weather_app.Services
             return records;
         }
 
-        public List<string> GetFilteredRecords(string startLatitude, string endLatitude)
+        public List<string> GetFilteredRecords(
+            string startLatitude,
+            string endLatitude,
+            int startYear,
+            int endYear,
+            int startDay,
+            int endDay,
+            int step)
         {
             List<string> filteredRecords = new List<string>();
 
@@ -89,43 +96,30 @@ namespace weather_app.Services
             {
                 var allRecords = GetAllRecords();
 
-                if (allRecords.Count == 0)
-                {
-                    MessageBox.Show("No records available in the source list.");
-                    return filteredRecords;
-                }
+                // Szűrés koordinátákra
+                var coordinateFilteredRecords = allRecords
+                    .Where(record => IsWithinCoordinates(record, startLatitude, endLatitude))
+                    .ToList();
 
-                // Ensure consistent parsing of start and end latitude values
-                double startLat = double.Parse(startLatitude.Replace(',', '.'), CultureInfo.InvariantCulture);
-                double endLat = double.Parse(endLatitude.Replace(',', '.'), CultureInfo.InvariantCulture);
+                // Szűrés évekre (csak ha nem a teljes tartomány van kiválasztva)
+                var yearFilteredRecords = (startYear != 2014 || endYear != 2024)
+                    ? coordinateFilteredRecords
+                        .Where(record => IsWithinYear(record, startYear, endYear, step))
+                        .ToList()
+                    : coordinateFilteredRecords;
 
-                //MessageBox.Show($"startLat: {startLat}, endLat: {endLat}");
-
-                filteredRecords = allRecords.Where(record =>
-                {
-                    //MessageBox.Show($"Processing Record: {record}");
-
-                    var latitude = GetLatitudeFromRecord(record);
-
-                    //MessageBox.Show($"Parsed latitude: {latitude}, startLat: {startLat}, endLat: {endLat}");
-
-                    //bool isInRange = (latitude > startLat || latitude.Equals(startLat)) && (latitude < endLat || latitude.Equals(endLat));
-
-                    //bool isInRange = latitude >= startLat && latitude <= endLat;
-                    /*if (AreDoublesEqual(latitude, startLat))
-                    {
-                        MessageBox.Show("The latitude is approximately equal to the start latitude.");
-                    }*/
-                    return AreDoublesEqual(latitude, startLat) || AreDoublesEqual(latitude, endLat) || (latitude > startLat && latitude < endLat);
-                    //MessageBox.Show($"Is in range: {isInRange}");
-                }).ToList();
+                // Szűrés napokra (csak ha nem a teljes tartomány van kiválasztva)
+                filteredRecords = (startDay != 25 || endDay != 31)
+                    ? yearFilteredRecords
+                        .Where(record => IsWithinDays(record, startDay, endDay))
+                        .ToList()
+                    : yearFilteredRecords;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error occurred during filtering: {ex.Message}");
+                MessageBox.Show($"Hiba történt a szűrés során: {ex.Message}");
             }
 
-            MessageBox.Show($"Filtered Records Count: {filteredRecords.Count}");
             return filteredRecords;
         }
 
@@ -162,6 +156,47 @@ namespace weather_app.Services
         private bool AreDoublesEqual(double value1, double value2, double tolerance = 0.0001)
         {
             return Math.Abs(value1 - value2) < tolerance;
+        }
+
+        private bool IsWithinCoordinates(string record, string startLat, string endLat)
+        {
+            var latitude = GetLatitudeFromRecord(record);
+            double startLatitude = double.Parse(startLat.Replace(',', '.'), CultureInfo.InvariantCulture);
+            double endLatitude = double.Parse(endLat.Replace(',', '.'), CultureInfo.InvariantCulture);
+            //MessageBox.Show("double startlat: " + startLatitude + " endlat: "+ endLatitude);
+
+            double minLatitude = Math.Min(startLatitude, endLatitude);
+            double maxLatitude = Math.Max(startLatitude, endLatitude);
+
+            // Ellenőrzés
+            return Math.Abs(latitude - startLatitude) < 0.001 ||  // Azonos érték esetén
+                   (latitude >= minLatitude && latitude <= maxLatitude);
+        }
+
+        private bool IsWithinYear(string record, int startYear, int endYear, int step)
+        {
+            var yearRegex = new Regex(@"\b(\d{4})\b"); // Év kinyerése
+            var match = yearRegex.Match(record);
+
+            if (match.Success && int.TryParse(match.Value, out int year))
+            {
+                return (year >= startYear && year <= endYear && ((year - startYear) % step == 0)) || year == endYear;
+            }
+
+            return false;
+        }
+
+        private bool IsWithinDays(string record, int startDay, int endDay)
+        {
+            var dateRegex = new Regex(@"\d{4}-\d{2}-(\d{2})"); // Nap kinyerése
+            var match = dateRegex.Match(record);
+
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int day))
+            {
+                return day >= startDay && day <= endDay;
+            }
+
+            return false;
         }
 
     }

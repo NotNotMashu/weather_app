@@ -41,6 +41,12 @@ namespace weather_app.Views
             // Koordináták kiválasztása
             var startCoord = CoordStartBox.SelectedItem.ToString();
             var endCoord = CoordEndBox.SelectedItem.ToString();
+            int startYear = Convert.ToInt16(((ComboBoxItem)StartYearComboBox.SelectedItem).Content);
+            int endYear = Convert.ToInt16(((ComboBoxItem)EndYearComboBox.SelectedItem).Content);
+            int startDay = Convert.ToInt16(((ComboBoxItem)DayStartBox.SelectedItem).Content);
+            int endDay = Convert.ToInt16(((ComboBoxItem)DayEndBox.SelectedItem).Content);
+            var stepFromBox = ScaleComboBox.SelectedItem.ToString();
+
 
             // Koordináták formátumának ellenőrzése és szétválasztása
             try
@@ -49,7 +55,8 @@ namespace weather_app.Views
                 endCoord = endCoord.Replace('.', ',');
                 var startLatLong = startCoord.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 var endLatLong = endCoord.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                
+                var stepLong = stepFromBox.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
                 if (startLatLong.Length != 2 || endLatLong.Length != 2)
                 {
                     MessageBox.Show("Nem két érték van a koordinátákban.");
@@ -58,9 +65,13 @@ namespace weather_app.Views
 
                 String startLatitude = startLatLong[0];
                 String endLatitude = endLatLong[0];
+                String step = stepLong[1];
+                MessageBox.Show("step: " + step);
+
+                MessageBox.Show("separated string startlatitude: " + startLatitude);
 
                 // Rekordok szűrése
-                List<string> coordinateFilteredRecords = _xmlDataHandler.GetFilteredRecords(startLatitude, endLatitude);
+                List<string> coordinateFilteredRecords = _xmlDataHandler.GetFilteredRecords(startLatitude, endLatitude, startYear, endYear, startDay, endDay, int.Parse(step));
 
                 // Rekordok megjelenítése a ListView-ban
                 Records.Clear();

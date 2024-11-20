@@ -24,7 +24,7 @@
             <!-- Évszámok kiválasztása -->
             <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="0">
                 <TextBlock Text="Kezdő év:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <ComboBox x:Name="StartYearComboBox" Width="55">
+                <ComboBox x:Name="StartYearComboBox" Width="55" SelectedIndex="0">
                     <ComboBoxItem Content="2014" />
                     <ComboBoxItem Content="2015" />
                     <ComboBoxItem Content="2016" />
@@ -41,7 +41,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="1">
                 <TextBlock Text="Befejező év:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <ComboBox x:Name="EndYearComboBox" Width="55">
+                <ComboBox x:Name="EndYearComboBox" Width="55" SelectedIndex="10">
                     <ComboBoxItem Content="2014" />
                     <ComboBoxItem Content="2015" />
                     <ComboBoxItem Content="2016" />
@@ -59,7 +59,7 @@
             <!-- Lépték kiválasztása -->
             <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="2">
                 <TextBlock Text="Lépték:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <ComboBox x:Name="ScaleComboBox" Width="55">
+                <ComboBox x:Name="ScaleComboBox" Width="55" SelectedIndex="0">
                     <ComboBoxItem Content="1 év" />
                     <ComboBoxItem Content="2 év" />
                     <ComboBoxItem Content="3 év" />
@@ -71,7 +71,7 @@
             <!-- Napok kiválasztása -->
             <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="3">
                 <TextBlock Text="Kezdő nap: 08-" VerticalAlignment="Center"/>
-                <ComboBox x:Name="DayStartBox" Width="40">
+                <ComboBox x:Name="DayStartBox" Width="40" SelectedIndex="0">
                     <ComboBoxItem Content="25" />
                     <ComboBoxItem Content="26" />
                     <ComboBoxItem Content="27" />
@@ -84,7 +84,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="10" Grid.Column="4">
                 <TextBlock Text="Utolsó nap: 08-" VerticalAlignment="Center"/>
-                <ComboBox x:Name="DayEndBox" Width="40">
+                <ComboBox x:Name="DayEndBox" Width="40" SelectedIndex="6">
                     <ComboBoxItem Content="25" />
                     <ComboBoxItem Content="26" />
                     <ComboBoxItem Content="27" />
