@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="weather_app.Views.DetailedHistoricalWeather"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:weather_app.Views"
+             xmlns:conv="clr-namespace:weather_app.Views" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="720">
+
+    <UserControl.Resources>
+        <conv:RemoveCommaConverter x:Key="RemoveCommaConverter"/>
+    </UserControl.Resources>
+    
+    
+    <Grid>
+        <Grid Margin="10,20,10,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Első oszlop -->
+            <Grid Grid.Column="0" HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Nap kiválasztása -->
+                <Grid Grid.Row="0" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Nap: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
+                    <ComboBox x:Name="DayBox" SelectedIndex="0" Grid.Column="1">
+                        <ComboBoxItem Content="25" />
+                        <ComboBoxItem Content="26" />
+                        <ComboBoxItem Content="27" />
+                        <ComboBoxItem Content="28" />
+                        <ComboBoxItem Content="29" />
+                        <ComboBoxItem Content="30" />
+                        <ComboBoxItem Content="31" />
+                    </ComboBox>
+                </Grid>
+
+                <!-- Év kiválasztása -->
+                <Grid Grid.Row="1" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Év: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
+                    <ComboBox x:Name="YearBox" SelectedIndex="0" Grid.Column="1">
+                        <ComboBoxItem Content="2014" />
+                        <ComboBoxItem Content="2015" />
+                        <ComboBoxItem Content="2016" />
+                        <ComboBoxItem Content="2017" />
+                        <ComboBoxItem Content="2018" />
+                        <ComboBoxItem Content="2019" />
+                        <ComboBoxItem Content="2020" />
+                        <ComboBoxItem Content="2021" />
+                        <ComboBoxItem Content="2022" />
+                        <ComboBoxItem Content="2023" />
+                        <ComboBoxItem Content="2024" />
+                    </ComboBox>
+                </Grid>
+
+                <Button x:Name="Search" Content="Keresés" Grid.Row="2" Margin="50,5,50,5" Click="FilterButton_Click"/>
+                <!-- Lista -->
+                <Grid Grid.Row="3" HorizontalAlignment="Stretch">
+                    <ListView x:Name="ResultListView" Grid.Row="2" Margin="5">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="5">
+                                    <!-- Koordináta -->
+                                    <TextBlock Text="{Binding Coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
+                                    <ItemsControl ItemsSource="{Binding HourlyDataList}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <!-- Óra -->
+                                                    <TextBlock Text="{Binding Time}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
+                                                    <!-- Értékek -->
+                                                    <TextBlock Text="{Binding Temperature, StringFormat='Hőmérséklet: {0} °C'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding WindSpeed, StringFormat='Szélsebesség: {0} km/h'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding Radiation, StringFormat='Sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="1" Margin="5" HorizontalAlignment="Stretch">
+                <ListView x:Name="AvgDetailsListView" ItemsSource="{Binding Details}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Summary" DisplayMemberBinding="{Binding}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

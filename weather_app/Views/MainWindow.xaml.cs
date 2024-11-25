@@ -15,6 +15,7 @@ namespace weather_app
     {
         private readonly ApiService _apiService;
         private readonly Coordinates _coordinates;
+        private readonly XmlDataHandler _xmlDataHandler;
         private readonly LocationService _locationService;
 
         public MainViewModel ViewModel { get; set; }
@@ -24,19 +25,17 @@ namespace weather_app
         {
             InitializeComponent();
 
-            // Initialize services and data collections
             _apiService = new ApiService();
             _coordinates = new Coordinates();
             _locationService = new LocationService();
             CurrentWeatherData = new ObservableCollection<CurrentWeatherData>();
 
-            // Load current location (if required)
             _locationService.GetLocation();
         }
 
         private async void Download_Data_Click(object sender, RoutedEventArgs e)
         {
-            // Download historical weather data for each coordinate and year
+            _apiService.CreateFileIfNeeded();
             for (int year = 2014; year <= 2024; year++)
             {
                 foreach (var coord in _coordinates.CoordinatePairs)
@@ -45,10 +44,9 @@ namespace weather_app
                     double lon = coord.Item2;
 
                     await _apiService.FetchAndStoreHistoricalWeatherData("open-meteo", lat, lon, year);
-                    await Task.Delay(2000); // Avoid overwhelming the API with requests
+                    //await Task.Delay(2000);
                 }
             }
-
             MessageBox.Show("Historical data download complete.");
         }
 
@@ -59,11 +57,15 @@ namespace weather_app
 
         private void Show_Historical_Window(object sender, RoutedEventArgs e)
         {
-            // Navigate to the HistoricalWeather user control
             MainContent.Content = new HistoricalWeather();
         }
 
-        /* Uncomment and implement if needed
+        private void Show_Detailed_Historical_Window(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new DetailedHistoricalWeather();
+        }
+
+        /*
         private async Task RefreshCurrentWeatherData()
         {
             CurrentWeatherData.Clear();

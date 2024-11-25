@@ -16,6 +16,7 @@
         <Border Background="AliceBlue" CornerRadius="10,0,0,10" Grid.Column="0"/>
         <Label Content="Current weather" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" Grid.Column="0"/>
         <Image HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Grid.Column="0" Height="100" Width="180"/>
+        <Button Content="Search Historical Data by Day" HorizontalAlignment="Center" Margin="0,0,0,150" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Detailed_Historical_Window"/>
         <Button Content="Show Historical Data" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
         <Button Content="Download Historical Data" HorizontalAlignment="Center" Margin="0,0,0,70" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Download_Data_Click"/>
         <Button Content="Close App" HorizontalAlignment="Center" Margin="0,0,0,30" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Foreground="Red" Click="Close_Button_Click"/>
@@ -26,7 +27,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Fejléc sor -->
+            <!-- Current Weather -->
             <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="85"/>

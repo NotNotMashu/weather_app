@@ -12,6 +12,8 @@ using System.Data.Common;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using weather_app.ViewModels;
+using System.Runtime.CompilerServices;
 
 namespace weather_app.Services
 {
@@ -22,32 +24,51 @@ namespace weather_app.Services
         public XmlDataHandler(string filePath)
         {
             _filePath = filePath;
+        }
 
-            if (!File.Exists(_filePath))
+        public void CreateOrReplaceXmlFile()
+        {
+            try
             {
-                var rootElement = new XElement("WeatherData");
+                if (File.Exists(_filePath))
+                {
+                    File.Delete(_filePath); // Törlés, ha már létezik
+                }
+
+                var rootElement = new XElement("weather_data");
                 var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), rootElement);
-                doc.Save(_filePath);
+                doc.Save(_filePath); // xml létrehozása
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error while creating the XML file: {ex.Message}");
             }
         }
 
         public void AppendHistoricalWeatherData(string provider, double latitude, double longitude, WeatherData weatherData)
         {
             XDocument doc = XDocument.Load(_filePath);
-            // Új record
+
             for (int i = 0; i < weatherData.hourly.time.Count; i++)
             {
-                XElement recordElement = new XElement("Record",
-                    new XElement("Provider", provider),
-                    new XElement("Latitude", latitude),
-                    new XElement("Longitude", longitude),
-                    new XElement("Time", weatherData.hourly.time[i]),
-                    new XElement("Temperature", weatherData.hourly.temperature_2m[i]),
-                    new XElement("WindSpeed", weatherData.hourly.wind_speed_10m[i]),
-                    new XElement("Radiation", weatherData.hourly.direct_radiation[i])
-                );
+                DateTime timestamp = DateTime.Parse(weatherData.hourly.time[i]);
+                int hour = timestamp.Hour;
 
-                doc.Root.Add(recordElement);
+                // Csak 6:00, 12:00 és 18:00
+                if (hour == 6 || hour == 12 || hour == 18)
+                {
+                    XElement recordElement = new XElement("Record",
+                        new XElement("Provider", provider),
+                        new XElement("Latitude", latitude),
+                        new XElement("Longitude", longitude),
+                        new XElement("Time", weatherData.hourly.time[i]),
+                        new XElement("Temperature", weatherData.hourly.temperature_2m[i]),
+                        new XElement("WindSpeed", weatherData.hourly.wind_speed_10m[i]),
+                        new XElement("Radiation", weatherData.hourly.direct_radiation[i])
+                    );
+
+                    doc.Root.Add(recordElement);
+                }
             }
 
             doc.Save(_filePath);
@@ -62,7 +83,7 @@ namespace weather_app.Services
 
             XDocument doc = XDocument.Load(_filePath);
             string fileContent = File.ReadAllText(_filePath);
-            MessageBox.Show($"XML tartalom:\n{fileContent}");
+            //MessageBox.Show($"XML tartalom:\n{fileContent}");
 
             foreach (var record in doc.Root.Elements("Record"))
             {
@@ -97,9 +118,11 @@ namespace weather_app.Services
                 var allRecords = GetAllRecords();
 
                 // Szűrés koordinátákra
-                var coordinateFilteredRecords = allRecords
+                var coordinateFilteredRecords = (!startLatitude.Equals("skip"))
+                    ? allRecords
                     .Where(record => IsWithinCoordinates(record, startLatitude, endLatitude))
-                    .ToList();
+                    .ToList()
+                    : allRecords;
 
                 // Szűrés évekre (csak ha nem a teljes tartomány van kiválasztva)
                 var yearFilteredRecords = (startYear != 2014 || endYear != 2024)
@@ -127,13 +150,9 @@ namespace weather_app.Services
         {
             try
             {
-                // Regular expression to match the first number before the comma
                 var match = Regex.Match(record, @"^(-?\d+(\.\d+)?)");
-                //MessageBox.Show("match to , and to double:" + Convert.ToDouble(match.Groups[1].Value.ToString().Replace('.',',')));
-
                 if (match.Success)
                 {
-                    // Parse the latitude value from the matched group
                     if (double.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude))
                     {
                         //MessageBox.Show("parsed latitude: " + latitude); //-12,47
@@ -150,7 +169,7 @@ namespace weather_app.Services
                 MessageBox.Show($"Error parsing latitude: {ex.Message}");
             }
 
-            return 0; // Return 0 if no valid latitude was found
+            return 0; 
         }
 
         private bool AreDoublesEqual(double value1, double value2, double tolerance = 0.0001)
@@ -168,7 +187,6 @@ namespace weather_app.Services
             double minLatitude = Math.Min(startLatitude, endLatitude);
             double maxLatitude = Math.Max(startLatitude, endLatitude);
 
-            // Ellenőrzés
             return Math.Abs(latitude - startLatitude) < 0.001 ||  // Azonos érték esetén
                    (latitude >= minLatitude && latitude <= maxLatitude);
         }
@@ -197,6 +215,70 @@ namespace weather_app.Services
             }
 
             return false;
+        }
+
+
+        public List<WeatherRecord> ParseRecords(List<string> recordStrings)
+        {
+            List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
+
+            // Csoportosítjuk az adatokat koordináta alapján
+            var groupedByCoordinate = recordStrings
+                .GroupBy(record => record.Split('|')[0])  // Csoportosítás koordináta alapján
+                .ToList();
+
+            foreach (var group in groupedByCoordinate)
+            {
+                WeatherRecord weatherRecord = new WeatherRecord
+                {
+                    Coordinate = group.Key,
+                    HourlyDataList = new List<WeatherRecordHourly>()
+                };
+
+                foreach (var recordString in group)
+                {
+                    var parts = recordString.Split('|');
+                    if (parts.Length < 2)
+                        continue;
+
+                    var time = parts[1].Split('T')[1].Trim();
+                    var dataParts = parts[2].Split(new string[] { "Temperature:", "WindSpeed:", "Radiation:" }, StringSplitOptions.None);
+
+                    if (dataParts.Length < 4)
+                        continue;
+
+                    var temperature = dataParts[1].Trim();
+                    var windSpeed = dataParts[2].Trim();
+                    var radiation = dataParts[3].Trim();
+
+                    weatherRecord.HourlyDataList.Add(new WeatherRecordHourly
+                    {
+                        Time = time,
+                        Temperature = temperature,
+                        WindSpeed = windSpeed,
+                        Radiation = radiation
+                    });
+                }
+
+                weatherRecords.Add(weatherRecord);
+            }
+
+            return weatherRecords;
+        }
+
+        public List<WeatherRecord> GetFilteredRecordsSeparated(int year, int day)
+        {
+            List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
+            var filteredRecords = GetFilteredRecords("skip", "skip", year, year, day, day, 1);
+
+            var weatherRecordsFromParse = ParseRecords(filteredRecords);
+
+            if (weatherRecordsFromParse != null)
+            {
+                weatherRecords.AddRange(weatherRecordsFromParse);
+            }
+
+            return weatherRecords;
         }
 
     }
