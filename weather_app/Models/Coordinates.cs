@@ -30,7 +30,7 @@ namespace weather_app.Services
                 new Tuple<double, double>(-16.47, 133.39),
                 new Tuple<double, double>(-17.34, 133.44),
                 new Tuple<double, double>(-18.16, 133.72),
-               // new Tuple<double, double>(-18.95, 134.13), //TODO doesn't work after 2014
+                new Tuple<double, double>(-18.95, 134.13), 
                 new Tuple<double, double>(-19.81, 134.20), //1000
                 new Tuple<double, double>(-20.71, 134.24),
                 new Tuple<double, double>(-21.51, 133.90),
@@ -41,7 +41,7 @@ namespace weather_app.Services
                 new Tuple<double, double>(-25.34, 133.19),
                 new Tuple<double, double>(-26.19, 133.19),
                 new Tuple<double, double>(-27.03, 133.44),
-                //new Tuple<double, double>(-27.76, 134.00), //2000 //TODO doesn't work after 2014
+                new Tuple<double, double>(-27.76, 134.00), //2000 
                 new Tuple<double, double>(-28.59, 134.29),
                 new Tuple<double, double>(-29.21, 134.96),
                 new Tuple<double, double>(-30.05, 135.20),
@@ -51,7 +51,7 @@ namespace weather_app.Services
                 new Tuple<double, double>(-32.45, 137.71),
                 new Tuple<double, double>(-33.23, 138.11),
                 new Tuple<double, double>(-34.09, 138.20),
-                //new Tuple<double, double>(-34.93, 138.60) //3000 //TODO doesn't work after 2014
+                new Tuple<double, double>(-34.93, 138.60) //3000 
             };
         }
     }

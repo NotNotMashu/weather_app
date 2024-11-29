@@ -222,7 +222,6 @@ namespace weather_app.Services
         {
             List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
 
-            // Csoportosítjuk az adatokat koordináta alapján
             var groupedByCoordinate = recordStrings
                 .GroupBy(record => record.Split('|')[0])  // Csoportosítás koordináta alapján
                 .ToList();
@@ -247,16 +246,16 @@ namespace weather_app.Services
                     if (dataParts.Length < 4)
                         continue;
 
-                    var temperature = dataParts[1].Trim();
-                    var windSpeed = dataParts[2].Trim();
-                    var radiation = dataParts[3].Trim();
+                    var temperature = dataParts[1].Trim().Split(',');
+                    var windSpeed = dataParts[2].Trim().Split(',');
+                    var radiation = dataParts[3].Trim().Split(',');
 
                     weatherRecord.HourlyDataList.Add(new WeatherRecordHourly
                     {
                         Time = time,
-                        Temperature = temperature,
-                        WindSpeed = windSpeed,
-                        Radiation = radiation
+                        Temperature = double.Parse(temperature[0], System.Globalization.CultureInfo.InvariantCulture),
+                        WindSpeed = double.Parse(windSpeed[0], System.Globalization.CultureInfo.InvariantCulture),
+                        Radiation = double.Parse(radiation[0], System.Globalization.CultureInfo.InvariantCulture)
                     });
                 }
 
@@ -280,6 +279,25 @@ namespace weather_app.Services
 
             return weatherRecords;
         }
+
+        public List<WeatherRecord> GetFilteredRecordsSeparated(int day)
+        {
+            List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
+            for (int year = 2014; year <= 2024; year++)
+            {
+                var filteredRecords = GetFilteredRecords("skip", "skip", year, year, day, day, 1);
+
+                var weatherRecordsFromParse = ParseRecords(filteredRecords);
+
+                if (weatherRecordsFromParse != null)
+                {
+                    weatherRecords.AddRange(weatherRecordsFromParse);
+                }
+            }
+
+            return weatherRecords;
+        }
+
 
     }
 }

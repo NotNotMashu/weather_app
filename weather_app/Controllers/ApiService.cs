@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using static System.Net.WebRequestMethods;
 using System.Collections;
 using System.Diagnostics;
+using Windows.Services.Maps;
 
 namespace weather_app.Services
 {
@@ -20,6 +21,9 @@ namespace weather_app.Services
     {
         private readonly HttpClient _httpClient;
         private readonly XmlDataHandler _xmlHandler;
+        private string apiForecastPart1 = "https://api.open-meteo.com/v1/forecast?latitude=";
+        private string apiForecastPart2 = "&longitude=";
+        private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
         public ApiService()
         {
             _httpClient = new HttpClient();
@@ -37,6 +41,7 @@ namespace weather_app.Services
             {
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
+
                 return await response.Content.ReadAsStringAsync();
             }
             catch (HttpRequestException e)
@@ -56,12 +61,11 @@ namespace weather_app.Services
             try
             {
                 string jsonResponse = await GetWeatherDataAsync(apiUrl);
+
                 if (!jsonResponse.StartsWith("Error:"))
                 {
-                    // Deserialize the JSON into a single WeatherData object
                     WeatherData weatherData = JsonConvert.DeserializeObject<WeatherData>(jsonResponse);
 
-                    // Assuming you only need to append this single weather data
                     _xmlHandler.AppendHistoricalWeatherData(provider, latitude, longitude, weatherData);
                 }
                 else
@@ -74,6 +78,32 @@ namespace weather_app.Services
                 Debug.WriteLine($"Error processing historical API response: {ex.Message}");
             }
         }
+
+        public async Task<WeatherData> ReturnForecastData(Tuple<double, double> coordpair)
+        {
+            try
+            {
+                string url = String.Concat(apiForecastPart1, coordpair.Item1.ToString().Replace(',', '.'), apiForecastPart2, coordpair.Item2.ToString().Replace(',', '.'), apiForecastPart3);
+                //string url = $"{apiForecastPart1}{coordpair.Item1.ToString().Replace(',', '.')}&{apiForecastPart2}{coordpair.Item2.ToString().Replace(',', '.')}{apiForecastPart3}";
+                string jsonResponse = await GetWeatherDataAsync(url);
+
+                if (!jsonResponse.StartsWith("Error:"))
+                {
+                    WeatherData weatherData = JsonConvert.DeserializeObject<WeatherData>(jsonResponse);
+                    return weatherData;
+                }
+                else
+                {
+                    Debug.WriteLine("Error in fetching historical weather data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error processing historical API response: {ex.Message}");
+            }
+            return null;
+        }
+
 
         public async Task CreateFileIfNeeded()
         {

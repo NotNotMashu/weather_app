@@ -8,11 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="720">
 
-    <UserControl.Resources>
-        <conv:RemoveCommaConverter x:Key="RemoveCommaConverter"/>
-    </UserControl.Resources>
-    
-    
+
     <Grid>
         <Grid Margin="10,20,10,20">
             <Grid.ColumnDefinitions>
@@ -106,7 +102,7 @@
                 <ListView x:Name="AvgDetailsListView" ItemsSource="{Binding Details}">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Summary" DisplayMemberBinding="{Binding}" />
+                            <GridViewColumn DisplayMemberBinding="{Binding}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

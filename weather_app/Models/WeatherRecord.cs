@@ -15,8 +15,8 @@ namespace weather_app.ViewModels
         public class WeatherRecordHourly
         {
             public string Time { get; set; }
-            public string Temperature { get; set; }
-            public string WindSpeed { get; set; }
-            public string Radiation { get; set; }
+            public double Temperature { get; set; }
+            public double WindSpeed { get; set; }
+            public double Radiation { get; set; }
         }
 }

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="weather_app.Views.ForecastWeather"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:weather_app.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="720">
+    <Grid Margin="10,20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!--Első sor-->
+            <Grid Grid.Row="0">
+                <TextBlock Text="Előrejelzések" HorizontalAlignment="Center"/>
+            </Grid>
+            <!--Második sor-->
+            <Grid Grid.Row="1" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Button Height="20" Content="Előző"/>
+                    <TextBlock Text="29" FontSize="16" Margin="5"/>
+                    <Button Height="20"  Content="Következő"/>
+                </StackPanel>
+            </Grid>
+
+            <!--Harmadik sor-->
+            <Grid Grid.Row="2">
+                
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

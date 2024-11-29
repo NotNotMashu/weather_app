@@ -19,7 +19,7 @@ namespace weather_app
         private readonly LocationService _locationService;
 
         public MainViewModel ViewModel { get; set; }
-        public ObservableCollection<CurrentWeatherData> CurrentWeatherData { get; set; }
+        //public ObservableCollection<CurrentWeatherData> CurrentWeatherData { get; set; }
 
         public MainWindow()
         {
@@ -28,7 +28,7 @@ namespace weather_app
             _apiService = new ApiService();
             _coordinates = new Coordinates();
             _locationService = new LocationService();
-            CurrentWeatherData = new ObservableCollection<CurrentWeatherData>();
+            //CurrentWeatherData = new ObservableCollection<CurrentWeatherData>();
 
             _locationService.GetLocation();
         }
@@ -63,6 +63,11 @@ namespace weather_app
         private void Show_Detailed_Historical_Window(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new DetailedHistoricalWeather();
+        }
+
+        private void Show_Forecast_Window(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new ForecastWeather();
         }
 
         /*
