@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:weather_app.Views"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="720">
     <Grid Margin="10,20">
@@ -12,24 +13,56 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!--Első sor-->
             <Grid Grid.Row="0">
-                <TextBlock Text="Előrejelzések" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Height="20" Content="Előző" Click="PreviousButton_Click" />
+                    <TextBlock Text="{Binding SelectedCoordinate}" FontSize="16" Margin="5" />
+                    <Button Height="20" Content="Következő" Click="NextButton_Click" />
+                </StackPanel>
             </Grid>
+
             <!--Második sor-->
             <Grid Grid.Row="1" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal">
-                    <Button Height="20" Content="Előző"/>
-                    <TextBlock Text="29" FontSize="16" Margin="5"/>
-                    <Button Height="20"  Content="Következő"/>
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock Text="Napra való szűrés:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="DateBox" ItemsSource="{Binding UniqueDates}" SelectedItem="Minden nap" Width="100" Margin="10" VerticalAlignment="Center"/>
+                    <TextBlock Text="Órára való szűrés:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="HourBox" ItemsSource="{Binding UniqueHours}" SelectedItem="Minden óra" Width="100" Margin="10" VerticalAlignment="Center"/>
+                    <Button Content="Szűrés" Click="Filter_Click"/>
                 </StackPanel>
             </Grid>
 
             <!--Harmadik sor-->
-            <Grid Grid.Row="2">
-                
+            <Grid Grid.Row="2" HorizontalAlignment="Center">
+                <TextBlock Text="Nap(ok)hoz tartozó számítások"/>
+            </Grid>
+
+            <!--Negyedik sor-->
+            <Grid Grid.Row="3" HorizontalAlignment="Center">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Heti előrejelzés" FontSize="18" Margin="0,0,0,10" HorizontalAlignment="Center" />
+
+                    <!-- Gráf (oszlopos diagram) -->
+                    <lvc:CartesianChart Height="200" Margin="10" Width="500">
+                        <lvc:CartesianChart.Series>
+                            <lvc:ColumnSeries Title="Hőmérséklet" Values="{Binding DailyTemperatures}" Fill="LightBlue" />
+                        </lvc:CartesianChart.Series>
+
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis Title="Napok" Labels="{Binding UniqueDates}" />
+                        </lvc:CartesianChart.AxisX>
+
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="Hőmérséklet (°C)" MinValue="0" MaxValue="45" />
+                        </lvc:CartesianChart.AxisY>
+                    </lvc:CartesianChart>
+
+
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>
