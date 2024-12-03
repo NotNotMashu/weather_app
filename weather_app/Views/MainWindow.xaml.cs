@@ -8,6 +8,7 @@ using weather_app.Models;
 using weather_app.Services;
 using weather_app.ViewModels;
 using weather_app.Views;
+using Windows.Services.Maps;
 
 namespace weather_app
 {
@@ -22,6 +23,7 @@ namespace weather_app
         private readonly ApiService _apiService;
         private readonly Coordinates _coordinates;
         private readonly XmlDataHandler _xmlDataHandler;
+        private readonly XmlForecastDataHandler _xmlForecastDataHandler;
         private readonly LocationService _locationService;
         private double _latitude;
         private double _longitude;
@@ -114,6 +116,7 @@ namespace weather_app
 
         private async void Download_Data_Click(object sender, RoutedEventArgs e)
         {
+            MessageBox.Show("Kérem várjon, ez a folyamat egy kis időt vesz igénybe.");
             _apiService.CreateFileIfNeeded();
             for (int year = 2014; year <= 2024; year++)
             {
@@ -123,10 +126,9 @@ namespace weather_app
                     double lon = coord.Item2;
 
                     await _apiService.FetchAndStoreHistoricalWeatherData("open-meteo", lat, lon, year);
-                    //await Task.Delay(2000);
                 }
             }
-            MessageBox.Show("Historical data download complete.");
+            MessageBox.Show("Letöltés vége.");
         }
 
         private void Close_Button_Click(object sender, RoutedEventArgs e)
@@ -159,6 +161,11 @@ namespace weather_app
         private async void WeatherUpdateTimer_Tick(object sender, EventArgs e)
         {
             await FetchWeatherDataAsync();
+        }
+
+        private void Show_Comparison_Window(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new HistoricalComparison();
         }
     }
 }

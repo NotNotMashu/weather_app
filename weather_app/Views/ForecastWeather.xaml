@@ -6,62 +6,52 @@
              xmlns:local="clr-namespace:weather_app.Views"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d" 
-             d:DesignWidth="720">
+             d:DesignWidth="1020">
     <Grid Margin="10,20">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="220"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!--Első sor-->
-            <Grid Grid.Row="0" Width="550">
+            <Grid Grid.Row="0" Width="900">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <!-- Napra szűrés -->
                 <StackPanel Orientation="Horizontal" Grid.Column="0" HorizontalAlignment="Center">
                     <TextBlock Text="Napra való szűrés:" VerticalAlignment="Center"/>
                     <ComboBox x:Name="DateBox" ItemsSource="{Binding UniqueDates}" SelectedIndex="0" Width="100" Margin="10"/>
                     <Button Content="Szűrés" Click="Day_Filter_Click" Height="20"/>
                 </StackPanel>
 
-                <Button Content="Minden nap átlagának megjelenítése" Tag="all"  Height="20" Click="Day_Filter_Click" Grid.Column="1" HorizontalAlignment="Center"/>
-
-            </Grid>
-
-            <!--Második sor-->
-            <Grid Grid.Row="1" Width="550">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="0">
+                <!-- Koordináták kiválasztása -->
+                <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Center">
                     <Button Height="20" Content="Előző" Click="PreviousButton_Click" />
                     <TextBlock Text="{Binding SelectedCoordinate}" FontSize="16" Margin="5" />
                     <Button Height="20" Content="Következő" Click="NextButton_Click" />
                 </StackPanel>
 
-                <Button Height="20" Content="Heti előrejelzés megjelenítése összes koordinátára" Click="All_Coordinates_Click" HorizontalAlignment="Center" Grid.Column="1" />
+                <!-- Összes koordináta gomb -->
+                <Button Height="20" Content="Összes koordináta" Click="All_Coordinates_Click" Grid.Column="2" HorizontalAlignment="Center" />
             </Grid>
 
-
-
-            <!--Harmadik sor-->
-            <Grid Grid.Row="2" HorizontalAlignment="Center">
+            <!--Második sor-->
+            <Grid Grid.Row="1" HorizontalAlignment="Center">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Napi előrejelzés" FontSize="18" Margin="0,0,0,10" HorizontalAlignment="Center" />
 
-                    <!-- Alapértelmezett DataGrid, ha csak egy rekord van az adott órához -->
+                    <!-- Alapértelmezett DataGrid -->
                     <DataGrid x:Name="DefaultDataGrid"
-                  ItemsSource="{Binding DailyWeather}" 
-                  AutoGenerateColumns="False" 
-                  Margin="10" 
-                  IsReadOnly="True">
+                              ItemsSource="{Binding DailyWeather}" 
+                              AutoGenerateColumns="False" 
+                              Margin="10" 
+                              IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Időpont" Binding="{Binding Time}" />
                             <DataGridTextColumn Header="Hőmérséklet (°C)" Binding="{Binding Temperature}" />
@@ -70,12 +60,12 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- Részletes DataGrid, ha több rekord tartozik ugyanarra az időpontra -->
+                    <!-- Részletes DataGrid -->
                     <DataGrid x:Name="DetailedDataGrid"
-                  Visibility="Collapsed" 
-                  AutoGenerateColumns="False" 
-                  Margin="10" 
-                  IsReadOnly="True">
+                              Visibility="Collapsed" 
+                              AutoGenerateColumns="False" 
+                              Margin="10" 
+                              IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Időpont" Binding="{Binding Time}" />
                             <DataGridTextColumn Header="Min Hőmérséklet (°C)" Binding="{Binding MinTemperature}" />
@@ -92,17 +82,15 @@
                 </StackPanel>
             </Grid>
 
-
-            <!--Negyedik sor-->
-            <Grid Grid.Row="3" HorizontalAlignment="Center">
+            <!--Harmadik sor-->
+            <Grid Grid.Row="2" HorizontalAlignment="Center">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Heti előrejelzés" FontSize="18" Margin="0,0,0,10" HorizontalAlignment="Center" />
 
-                    <DataGrid 
-    ItemsSource="{Binding WeeklyWeather}" 
-    AutoGenerateColumns="False" 
-    Margin="10" 
-    IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding WeeklyWeather}" 
+                              AutoGenerateColumns="False" 
+                              Margin="10" 
+                              IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Dátum" Binding="{Binding Date}" />
                             <DataGridTextColumn Header="Min Hőmérséklet" Binding="{Binding MinTemperature}" />
@@ -115,8 +103,6 @@
                             <DataGridTextColumn Header="Átlag Sugárzás" Binding="{Binding AverageRadiation}" />
                         </DataGrid.Columns>
                     </DataGrid>
-
-
                 </StackPanel>
             </Grid>
         </Grid>

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:weather_app"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1000" Background="Transparent" AllowsTransparency="True" WindowStyle="None">
+        Title="MainWindow" Height="700" Width="1300" Background="Transparent" AllowsTransparency="True" WindowStyle="None">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="280"/>
@@ -16,11 +16,12 @@
         <Border Background="AliceBlue" CornerRadius="10,0,0,10" Grid.Column="0"/>
         <Label Content="Jelenlegi időjárás" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" Grid.Column="0" FontSize="16"/>
         <Image Source="{Binding IconUrl}" HorizontalAlignment="Center" Margin="0,70,0,0" VerticalAlignment="Top" Grid.Column="0" Height="100" Width="180"/>
-        <Button Content="Show Forecast" HorizontalAlignment="Center" Margin="0,0,0,190" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Forecast_Window"/>
-        <Button Content="Search Historical Data by Day" HorizontalAlignment="Center" Margin="0,0,0,150" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Detailed_Historical_Window"/>
-        <Button Content="Show Historical Data" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
-        <Button Content="Download Historical Data" HorizontalAlignment="Center" Margin="0,0,0,70" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Download_Data_Click"/>
-        <Button Content="Close App" HorizontalAlignment="Center" Margin="0,0,0,30" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Foreground="Red" Click="Close_Button_Click"/>
+        <Button Content="Előrejelzés, múltbéli összehasonlítás" HorizontalAlignment="Center" Margin="0,0,0,230" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Comparison_Window"/>
+        <Button Content="Előrejelzés megtekintése" HorizontalAlignment="Center" Margin="0,0,0,190" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Forecast_Window"/>
+        <Button Content="Konkrét műltbéli adat keresése" HorizontalAlignment="Center" Margin="0,0,0,150" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Detailed_Historical_Window"/>
+        <Button Content="Múltbéli adatok listája" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
+        <Button Content="Műltbéli adatok letöltése" HorizontalAlignment="Center" Margin="0,0,0,70" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Download_Data_Click"/>
+        <Button Content="Bezárás" HorizontalAlignment="Center" Margin="0,0,0,30" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Foreground="Red" Click="Close_Button_Click"/>
 
         <Grid Grid.Column="0" Margin="0,180,0,0" VerticalAlignment="Top">
             <Grid.RowDefinitions>

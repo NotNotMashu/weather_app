@@ -25,6 +25,7 @@ namespace weather_app.Services
     {
         private readonly HttpClient _httpClient;
         private readonly XmlDataHandler _xmlHandler;
+        private readonly XmlForecastDataHandler _xmlForecastDataHandler;
         private string apiForecastPart1 = "https://api.open-meteo.com/v1/forecast?latitude=";
         private string apiForecastPart2 = "&longitude=";
         private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney&forecast_days=15";
@@ -43,6 +44,7 @@ namespace weather_app.Services
         {
             _httpClient = new HttpClient();
             _xmlHandler = new XmlDataHandler("weather_data.xml");
+            _xmlForecastDataHandler = new XmlForecastDataHandler("weather_forecast_data.xml");
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -162,10 +164,11 @@ namespace weather_app.Services
             string stringLat = latitude.ToString().Replace(',', '.');
             string stringLong = longitude.ToString().Replace(",", ".");
             string apiUrl = $"https://archive-api.open-meteo.com/v1/archive?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
-            
+            string apiUrlForecast = $"https://historical-forecast-api.open-meteo.com/v1/forecast?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
             try
             {
                 string jsonResponse = await GetWeatherDataAsync(apiUrl);
+                string jsonResponseForecast = await GetWeatherDataAsync(apiUrlForecast);
 
                 if (!jsonResponse.StartsWith("Error:"))
                 {
@@ -177,10 +180,23 @@ namespace weather_app.Services
                 {
                     Debug.WriteLine("Error in fetching historical weather data.");
                 }
+                if (year >= 2022)
+                {
+                    if (!jsonResponseForecast.StartsWith("Error:"))
+                    {
+                        WeatherData weatherData = JsonConvert.DeserializeObject<WeatherData>(jsonResponseForecast);
+
+                        _xmlForecastDataHandler.AppendHistoricalForecastData(provider, latitude, longitude, weatherData);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Error in fetching historical forecast data.");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing historical API response: {ex.Message}");
+                Debug.WriteLine($"Error processing historical forecast API response: {ex.Message}");
             }
         }
 
@@ -214,6 +230,7 @@ namespace weather_app.Services
         public async Task CreateFileIfNeeded()
         {
             _xmlHandler.CreateOrReplaceXmlFile();
+            _xmlForecastDataHandler.CreateOrReplaceXmlFile();
         }
     }
 }

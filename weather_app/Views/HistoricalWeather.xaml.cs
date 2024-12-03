@@ -66,9 +66,6 @@ namespace weather_app.Views
                 String startLatitude = startLatLong[0];
                 String endLatitude = endLatLong[0];
                 String step = stepLong[1];
-                MessageBox.Show("step: " + step);
-
-                MessageBox.Show("separated string startlatitude: " + startLatitude);
 
                 // Rekordok szűrése
                 List<string> coordinateFilteredRecords = _xmlDataHandler.GetFilteredRecords(startLatitude, endLatitude, startYear, endYear, startDay, endDay, int.Parse(step));
