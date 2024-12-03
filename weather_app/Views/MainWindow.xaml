@@ -14,85 +14,58 @@
 
         <!-- 1st column -->
         <Border Background="AliceBlue" CornerRadius="10,0,0,10" Grid.Column="0"/>
-        <Label Content="Current weather" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" Grid.Column="0"/>
-        <Image HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Grid.Column="0" Height="100" Width="180"/>
+        <Label Content="Jelenlegi időjárás" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" Grid.Column="0" FontSize="16"/>
+        <Image Source="{Binding IconUrl}" HorizontalAlignment="Center" Margin="0,70,0,0" VerticalAlignment="Top" Grid.Column="0" Height="100" Width="180"/>
         <Button Content="Show Forecast" HorizontalAlignment="Center" Margin="0,0,0,190" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Forecast_Window"/>
         <Button Content="Search Historical Data by Day" HorizontalAlignment="Center" Margin="0,0,0,150" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Detailed_Historical_Window"/>
         <Button Content="Show Historical Data" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
         <Button Content="Download Historical Data" HorizontalAlignment="Center" Margin="0,0,0,70" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Download_Data_Click"/>
         <Button Content="Close App" HorizontalAlignment="Center" Margin="0,0,0,30" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Foreground="Red" Click="Close_Button_Click"/>
 
-        <Grid Grid.Column="0" Margin="0,180,0,0" Height="300" VerticalAlignment="Top">
+        <Grid Grid.Column="0" Margin="0,180,0,0" VerticalAlignment="Top">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Current Weather -->
+            <!-- Fejléc az oszlopokhoz -->
             <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="85"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="85"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
-
-                <TextBlock Text="Temperature (°C)" FontSize="11" FontWeight="DemiBold" Grid.Column="0" HorizontalAlignment="Center"/>
-                <TextBlock Text="Wind Speed (km/h)" FontSize="11" FontWeight="DemiBold" Grid.Column="1" HorizontalAlignment="Center"/>
-                <TextBlock Text="Radiation" FontSize="11" FontWeight="DemiBold" Grid.Column="2" HorizontalAlignment="Center"/>
+                <TextBlock Text="Hőmérséklet" FontSize="12" FontWeight="DemiBold" Grid.Column="0" HorizontalAlignment="Center"/>
+                <TextBlock Text="Szélsebesség" FontSize="12" FontWeight="DemiBold" Grid.Column="1" HorizontalAlignment="Center"/>
             </Grid>
 
-            <!-- Időjárási adatok szolgáltatónként -->
-            <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0">
-                <!-- 1. -->
-                <TextBlock Text="{Binding CurrentProvider1}" FontSize="12" FontWeight="DemiBold" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="85"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="85"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding CurrentTemperature1}" FontSize="10" Grid.Column="0" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentWindSpeed1}" FontSize="10" Grid.Column="1" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentRadiation1}" FontSize="10" Grid.Column="2" HorizontalAlignment="Center"/>
-                </Grid>
+            <!-- Időjárási adatok dinamikus feltöltése -->
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding WeatherDataList}" HorizontalAlignment="Center">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <!-- Szolgáltató neve -->
+                                <RowDefinition Height="Auto"/>
+                                <!-- Adatok -->
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
 
-                <!-- 2. -->
-                <TextBlock Text="{Binding CurrentProvider2}" FontSize="12" FontWeight="DemiBold" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="85"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="85"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding CurrentTemperature2}" FontSize="10" Grid.Column="0" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentWindSpeed2}" FontSize="10" Grid.Column="1" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentRadiation2}" FontSize="10" Grid.Column="2" HorizontalAlignment="Center"/>
-                </Grid>
-                <!-- 3. -->
-                <TextBlock Text="{Binding CurrentProvider3}" FontSize="12" FontWeight="DemiBold" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="85"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="85"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding CurrentTemperature3}" FontSize="10" Grid.Column="0" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentWindSpeed3}" FontSize="10" Grid.Column="1" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentRadiation3}" FontSize="10" Grid.Column="2" HorizontalAlignment="Center"/>
-                </Grid>
-                <!-- Átlag -->
-                <TextBlock Text="{Binding CurrentAvg}" FontSize="12" FontWeight="DemiBold" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="85"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="85"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding CurrentAvg}" FontSize="10" Grid.Column="0" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentAvg}" FontSize="10" Grid.Column="1" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentAvg}" FontSize="10" Grid.Column="2" HorizontalAlignment="Center"/>
-                </Grid>
-            </StackPanel>
+                            <!-- Szolgáltató neve -->
+                            <TextBlock Text="{Binding Provider}" Grid.Row="0" Grid.ColumnSpan="2" 
+                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+
+                            <!-- Adatok -->
+                            <TextBlock Text="{Binding Temperature, StringFormat={}{0:F2} °C}" Grid.Row="1" Grid.Column="0" FontSize="10" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding WindSpeed, StringFormat={}{0:F2} km/h}" Grid.Row="1" Grid.Column="1" FontSize="10" HorizontalAlignment="Center"/>
+
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
 
         <!-- 2nd column -->

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace weather_app.Models
 {
-    class DailyStatistics
+    public class DailyStatistics
     {
-        public string Summary { get; set; }
+        public string Date { get; set; }
         public double AverageTemperature { get; set; }
         public double MinTemperature { get; set; }
         public double MaxTemperature { get; set; }
@@ -18,7 +18,6 @@ namespace weather_app.Models
         public double MaxWindSpeed { get; set; }
 
         public double AverageRadiation { get; set; }
-        public double MinRadiation { get; set; }
         public double MaxRadiation { get; set; }
     }
 }
