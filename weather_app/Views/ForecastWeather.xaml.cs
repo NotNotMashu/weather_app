@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using weather_app.Models;
 using weather_app.Services;
 using weather_app.ViewModels;
 
@@ -31,11 +32,14 @@ namespace weather_app.Views
 
         ApiService _apiService = new ApiService();
         Coordinates _coordinates = new Coordinates();
-
-        public ObservableCollection<WeatherRecord> WeeklyWeather { get; set; } = new ObservableCollection<WeatherRecord>();
-
-        public ObservableCollection<WeatherRecord> DailyWeather { get; set; } = new ObservableCollection<WeatherRecord>();
+        public ObservableCollection<DailyStatistics> WeeklyWeather { get; set; } = new ObservableCollection<DailyStatistics>();
+        private List<WeatherRecord> _loadedWeatherRecords = new List<WeatherRecord>();
+        public ObservableCollection<WeatherRecordHourly> DailyWeather { get; set; } = new ObservableCollection<WeatherRecordHourly>();
         public ObservableCollection<string> UniqueDates { get; set; } = new ObservableCollection<string>();
+
+        private int _currentCoordinateIndex = 0;
+        private bool _isFilteringByDay = false; // Igaz: kiválasztott nap, Hamis: összes
+
 
         public ForecastWeather()
         {
@@ -53,7 +57,9 @@ namespace weather_app.Views
         private async void InitializeForecastWeather()
         {
             List<WeatherRecord> weatherRecords = await LoadForecastData();
-            // TODO rest
+            _loadedWeatherRecords = weatherRecords;
+            CalculateDailyStats(_loadedWeatherRecords);
+
         }
 
         private async Task<List<WeatherRecord>> LoadForecastData()
@@ -61,7 +67,6 @@ namespace weather_app.Views
             var weatherRecords = new List<WeatherRecord>();
             var uniqueDates = new HashSet<string>();
 
-            // Párhuzamos API-hívások indítása
             var tasks = _coordinates.CoordinatePairs.Select(async coordpair =>
             {
                 WeatherData forecastData = await _apiService.ReturnForecastData(coordpair);
@@ -90,7 +95,7 @@ namespace weather_app.Views
                         }
 
                         int hour = timestamp.Hour;
-                        if (hour == 6 || hour == 12 || hour == 18 || hour == 3 || hour == 9 || hour == 15)
+                        if (hour == 6 || hour == 12 || hour == 18 || hour == 8 || hour == 14 || hour == 10 || hour == 16)
                         {
                             var hourlyData = new WeatherRecordHourly
                             {
@@ -118,17 +123,10 @@ namespace weather_app.Views
                 UniqueDates.Add(date);
             }
 
-            UniqueDates.Insert(0, "Minden nap");
             CalculateDailyStats(weatherRecords);
             return weatherRecords;
         }
-        /*private void LoadCoordinates()
-        {
-            foreach (var coord in _coordinates.CoordinatePairs)
-            {
-                string coordString = $"{coord.Item1.ToString().Replace(',', '.')} {coord.Item2.ToString().Replace(',', '.')}";
-            }
-        }*/
+
 
         private void PreviousCoordinate()
         {
@@ -162,18 +160,43 @@ namespace weather_app.Views
             UpdateSelectedCoordinate();
         }
 
-        private int _currentCoordinateIndex = 0;
-
         public string SelectedCoordinate
         {
-            get => _coordinates.CoordinatePairs.Count > 0
-                ? $"{_coordinates.CoordinatePairs[_currentCoordinateIndex].Item1} {_coordinates.CoordinatePairs[_currentCoordinateIndex].Item2}"
-                : string.Empty;
+            get
+            {
+                if (_currentCoordinateIndex == -1)
+                {
+                    return "Összes koordináta";
+                }
+
+                return _coordinates.CoordinatePairs.Count > 0
+                    ? $"{_coordinates.CoordinatePairs[_currentCoordinateIndex].Item1} {_coordinates.CoordinatePairs[_currentCoordinateIndex].Item2}"
+                    : string.Empty;
+            }
         }
+
 
         public void UpdateSelectedCoordinate()
         {
             OnPropertyChanged(nameof(SelectedCoordinate));
+            RecalculateStatsForSelectedCoordinate();
+            //RefreshDailyWeather();
+            if (_isFilteringByDay)
+            {
+                ShowSelectedDayData();
+            }
+            else
+            {
+                ShowAllDayData();
+            }
+        }
+
+        private void RecalculateStatsForSelectedCoordinate()
+        {
+            if (_loadedWeatherRecords != null)
+            {
+                CalculateDailyStats(_loadedWeatherRecords);
+            }
         }
 
         private void PreviousButton_Click(object sender, RoutedEventArgs e)
@@ -186,15 +209,128 @@ namespace weather_app.Views
             NextCoordinate();
         }
 
-        private void Filter_Click(object sender, RoutedEventArgs e)
+        private void Day_Filter_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is Button clickedButton)
+            {
+                string tag = clickedButton.Tag as string;
 
+                if (tag == "all")
+                {
+                    Debug.WriteLine("Nincs kiválasztott nap");
+                    _isFilteringByDay = false;
+                    ShowAllDayData();
+                }
+                else
+                {
+                    _isFilteringByDay = true;
+                    ShowSelectedDayData();
+                }
+            }
+        }
+
+        private void ShowAllDayData()
+        {
+            DailyWeather.Clear();
+
+            var allCoordinatesHourlyData = _loadedWeatherRecords
+                .SelectMany(record => record.HourlyDataList)
+                .Where(hourly =>
+                {
+                    var hour = DateTime.Parse(hourly.Time).Hour;
+                    return hour == 6 || hour == 12 || hour == 18 || hour == 3 || hour == 9 || hour == 15;
+                })
+                .ToList();
+
+            if (!allCoordinatesHourlyData.Any())
+            {
+                MessageBox.Show("Nincs elérhető adat!");
+                return;
+            }
+
+            foreach (var hourlyData in allCoordinatesHourlyData)
+            {
+                DailyWeather.Add(hourlyData);
+            }
+        }
+
+
+        private void ShowSelectedDayData()
+        {
+            string selectedDate = DateBox.SelectedItem.ToString();
+            DailyWeather.Clear();
+
+            IEnumerable<WeatherRecordHourly> selectedData;
+
+            if (_currentCoordinateIndex == -1) // Összes koordináta kiválasztva
+            {
+                selectedData = _loadedWeatherRecords
+                    .SelectMany(record => record.HourlyDataList)
+                    .Where(hourly => DateTime.Parse(hourly.Time).ToString("yyyy-MM-dd") == selectedDate);
+            }
+            else
+            {
+                var selectedRecord = _loadedWeatherRecords
+                    .FirstOrDefault(record => record.Coordinate == SelectedCoordinate);
+
+                if (selectedRecord == null)
+                {
+                    MessageBox.Show("Nincs adat az adott koordinátához!");
+                    return;
+                }
+
+                selectedData = selectedRecord.HourlyDataList
+                    .Where(hourly => DateTime.Parse(hourly.Time).ToString("yyyy-MM-dd") == selectedDate);
+            }
+
+            var groupedData = selectedData
+                .GroupBy(hourly => hourly.Time) // Csoportosítás időpont szerint
+                .Select(group => new WeatherRecordHourly
+                {
+                    Time = group.Key,
+                    Temperature = Math.Round(group.Average(hourly => hourly.Temperature), 2),
+                    WindSpeed = Math.Round(group.Average(hourly => hourly.WindSpeed), 2),
+                    Radiation = Math.Round(group.Average(hourly => hourly.Radiation), 2),
+                    MinTemperature = group.Min(hourly => hourly.Temperature),
+                    MaxTemperature = group.Max(hourly => hourly.Temperature),
+                    MaxWindSpeed = group.Max(hourly => hourly.WindSpeed),
+                    MinRadiation = group.Min(hourly => hourly.Radiation),
+                    MaxRadiation = group.Max(hourly => hourly.Radiation)
+                }).ToList();
+
+            if (!groupedData.Any())
+            {
+                MessageBox.Show("Nincs adat az adott napra!");
+                return;
+            }
+
+            foreach (var hourlyData in groupedData)
+            {
+                DailyWeather.Add(hourlyData);
+            }
+
+            if (_currentCoordinateIndex == -1)
+            {
+                DefaultDataGrid.Visibility = Visibility.Collapsed;
+
+                DetailedDataGrid.Visibility = Visibility.Visible;
+                DetailedDataGrid.ItemsSource = groupedData;
+            }
+            else
+            {
+                DefaultDataGrid.Visibility = Visibility.Visible;
+                DetailedDataGrid.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CalculateDailyStats(List<WeatherRecord> weatherRecords)
         {
+            var dailyStatsList = new List<DailyStatistics>();
+
             foreach (var record in weatherRecords)
             {
+                if (_currentCoordinateIndex != -1 && record.Coordinate != SelectedCoordinate) continue; // nem az összes vagy a jelenleg kiválasztott esetén
+
                 // Napokra bontás
                 var dailyData = GroupByDay(record);
 
@@ -203,30 +339,92 @@ namespace weather_app.Views
                     string date = day.Key;
                     var hourlyDataList = day.Value;
 
-                    // Adatok gyűjtése az adott napra
+                    // Napi adatok
                     var dailyTemperatures = hourlyDataList.Select(hourly => hourly.Temperature).ToList();
                     var dailyWindSpeeds = hourlyDataList.Select(hourly => hourly.WindSpeed).ToList();
                     var dailyRadiations = hourlyDataList.Select(hourly => hourly.Radiation).ToList();
+                    // Statisztika
+                    dailyStatsList.Add(new DailyStatistics
+                    {
+                        Date = date,
+                        MinTemperature = Math.Round(dailyTemperatures.Min(), 2),
+                        MaxTemperature = Math.Round(dailyTemperatures.Max(), 2),
+                        AverageTemperature = Math.Round(dailyTemperatures.Average(), 2),
+                        MinWindSpeed = Math.Round(dailyWindSpeeds.Min(), 2),
+                        MaxWindSpeed = Math.Round(dailyWindSpeeds.Max(), 2),
+                        AverageWindSpeed = Math.Round(dailyWindSpeeds.Average(), 2),
+                        MaxRadiation = Math.Round(dailyRadiations.Max(), 2),
+                        AverageRadiation = Math.Round(dailyRadiations.Average(), 2)
+                    });
+                }
+            }
 
-                    // Napi minimum és maximum értékek
-                    double minTemperature = dailyTemperatures.Min();
-                    double maxTemperature = dailyTemperatures.Max();
-                    double minWindSpeed = dailyWindSpeeds.Min();
-                    double maxWindSpeed = dailyWindSpeeds.Max();
-                    double maxRadiation = dailyRadiations.Max();
+            WeeklyWeather.Clear();
+            if (_currentCoordinateIndex != -1)
+            {
+                foreach (var stat in dailyStatsList)
+                {
+                    // Lista hozzáfűzése, ha nem minden koordinátára történik számítás
+                    WeeklyWeather.Add(stat);
+                }
+            }
+            else
+            {
+                if (dailyStatsList.Any())
+                {
+                    var allCoordDailyStatsList = new List<DailyStatistics>();
+                    var groupedByDate = dailyStatsList
+                        .GroupBy(ds => ds.Date) 
+                        .ToDictionary(g => g.Key, g => g.ToList());
 
-                    // Debug kiírás
-                    Debug.WriteLine($"Coordinate: {record.Coordinate}");
-                    Debug.WriteLine($"Date: {date}");
-                    Debug.WriteLine($"Min Temperature: {minTemperature}°C");
-                    Debug.WriteLine($"Max Temperature: {maxTemperature}°C");
-                    Debug.WriteLine($"Min Wind Speed: {minWindSpeed} m/s");
-                    Debug.WriteLine($"Max Wind Speed: {maxWindSpeed} m/s");
-                    Debug.WriteLine($"Max Radiation: {maxRadiation} W/m²");
-                    Debug.WriteLine("------------------------------------------------------");
+                    foreach (var dateGroup in groupedByDate)
+                    {
+                        string date = dateGroup.Key;
+                        var statsForDate = dateGroup.Value;
+
+                        // Napi statisztikák kiszámítása az összes koordinátából
+                        allCoordDailyStatsList.Add(new DailyStatistics
+                        {
+                            Date = date,
+                            MinTemperature = Math.Round(statsForDate.Min(ds => ds.MinTemperature), 2),
+                            MaxTemperature = Math.Round(statsForDate.Max(ds => ds.MaxTemperature), 2),
+                            AverageTemperature = Math.Round(statsForDate.Average(ds => ds.AverageTemperature), 2),
+                            MinWindSpeed = Math.Round(statsForDate.Min(ds => ds.MinWindSpeed), 2),
+                            MaxWindSpeed = Math.Round(statsForDate.Max(ds => ds.MaxWindSpeed), 2),
+                            AverageWindSpeed = Math.Round(statsForDate.Average(ds => ds.AverageWindSpeed), 2),
+                            MaxRadiation = Math.Round(statsForDate.Max(ds => ds.MaxRadiation), 2),
+                            AverageRadiation = Math.Round(statsForDate.Average(ds => ds.AverageRadiation), 2)
+                        });
+                    }
+
+                    foreach (var stat in allCoordDailyStatsList)
+                    {
+                        WeeklyWeather.Add(stat);
+                    }
                 }
             }
         }
+
+        /*private void AllWeekStat(List<DailyStatistics> statsList)
+        {
+            if (statsList.Any())
+            {
+                var averageStats = new DailyStatistics
+                {
+                    Date = "Összes nap",
+                    MinTemperature = Math.Round(statsList.Min(ds => ds.MinTemperature), 2),
+                    MaxTemperature = Math.Round(statsList.Max(ds => ds.MaxTemperature), 2),
+                    AverageTemperature = Math.Round(statsList.Average(ds => ds.AverageTemperature), 2),
+                    MinWindSpeed = Math.Round(statsList.Min(ds => ds.MinWindSpeed), 2),
+                    MaxWindSpeed = Math.Round(statsList.Max(ds => ds.MaxWindSpeed), 2),
+                    AverageWindSpeed = Math.Round(statsList.Average(ds => ds.AverageWindSpeed), 2),
+                    MaxRadiation = Math.Round(statsList.Max(ds => ds.MaxRadiation), 2),
+                    AverageRadiation = Math.Round(statsList.Average(ds => ds.AverageRadiation), 2),
+                };
+
+                WeeklyWeather.Add(averageStats);
+            }
+        }*/
 
         private Dictionary<string, List<WeatherRecordHourly>> GroupByDay(WeatherRecord record)
         {
@@ -235,6 +433,31 @@ namespace weather_app.Views
                 .ToDictionary(g => g.Key, g => g.ToList());
         }
 
+        private void RefreshDailyWeather()
+        {
+            DailyWeather.Clear();
 
+            var selectedRecord = _loadedWeatherRecords
+                .FirstOrDefault(record => record.Coordinate == SelectedCoordinate);
+
+            if (selectedRecord == null)
+            {
+                MessageBox.Show("Nincs adat az adott koordinátához!");
+                return;
+            }
+
+            foreach (var hourlyData in selectedRecord.HourlyDataList)
+            {
+                DailyWeather.Add(hourlyData);
+            }
+        }
+
+
+        private void All_Coordinates_Click(object sender, RoutedEventArgs e)
+        {
+            _currentCoordinateIndex = -1;
+            UpdateSelectedCoordinate();
+            OnPropertyChanged(nameof(SelectedCoordinate));
+        }
     }
 }

@@ -41,19 +41,19 @@ namespace weather_app.Services
             }
         }
 
-        public async void GetLocation()
+        /*public async void GetLocation()
         {
             try
             {
                 var locationService = new LocationService();
                 var (latitude, longitude) = await locationService.GetCurrentLocationAsync();
 
-                MessageBox.Show($"Your current location is:\nLatitude: {latitude}, Longitude: {longitude}");
+                //MessageBox.Show($"Your current location is:\nLatitude: {latitude}, Longitude: {longitude}");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error: {ex.Message}");
             }
-        }
+        }*/
     }
 }
