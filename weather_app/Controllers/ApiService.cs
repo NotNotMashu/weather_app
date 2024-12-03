@@ -14,6 +14,10 @@ using static System.Net.WebRequestMethods;
 using System.Collections;
 using System.Diagnostics;
 using Windows.Services.Maps;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using weather_app.Models;
+using System.Security.Policy;
 
 namespace weather_app.Services
 {
@@ -23,11 +27,113 @@ namespace weather_app.Services
         private readonly XmlDataHandler _xmlHandler;
         private string apiForecastPart1 = "https://api.open-meteo.com/v1/forecast?latitude=";
         private string apiForecastPart2 = "&longitude=";
-        private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
+        private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney&forecast_days=15";
+        string openWeatherMapKey, weatherStackKey, weatherApiKey;
+        private string _weatherIconUrl;
+        public string WeatherIconUrl
+        {
+            get => _weatherIconUrl;
+            set
+            {
+                _weatherIconUrl = value;
+            }
+        }
+
         public ApiService()
         {
             _httpClient = new HttpClient();
             _xmlHandler = new XmlDataHandler("weather_data.xml");
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            openWeatherMapKey = configuration["OpenWeatherMap:ApiKey"];
+            weatherStackKey = configuration["WeatherStack:ApiKey"];
+            weatherApiKey = configuration["WeatherAPI:ApiKey"];
+        }
+
+        public async Task<List<CurrentWeatherResponse>> CallAllCurrentProviders(string lat, string lon)
+        {
+            List<CurrentWeatherResponse> responses = new List<CurrentWeatherResponse>();
+
+            string apiUrlOpenWeathermap = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={openWeatherMapKey}&units=metric";
+            //string apiUrl2 = $"https://api.openweathermap.org/data/2.5/solar_radiation?lat={latitude}&lon={longitude}&appid={apiKey}"; // Ingyenesen nem elérhető
+            var openWeatherResponse = await CallCurrentWeather(apiUrlOpenWeathermap);
+            if (openWeatherResponse != null)
+            {
+                responses.Add(openWeatherResponse);
+            }
+
+            string apiUrlWeatherStack = $"https://api.weatherstack.com/current?access_key={weatherStackKey}&query={lat},{lon}";
+            var weatherStackResponse = await CallCurrentWeather(apiUrlWeatherStack);
+            if (weatherStackResponse != null)
+            {
+                responses.Add(weatherStackResponse);
+            }
+
+            string apiUrlWeatherApi = $"http://api.weatherapi.com/v1/current.json?key={weatherApiKey}&q={lat},{lon}&aqi=no";
+            var weatherApiResponse = await CallCurrentWeather(apiUrlWeatherApi);
+            if (weatherApiResponse != null)
+            {
+                responses.Add(weatherApiResponse);
+            }
+
+            return responses;
+        }
+        public async Task<CurrentWeatherResponse> CallCurrentWeather(string url)
+        {
+            try
+            {
+                string jsonResponse = await GetWeatherDataAsync(url);
+                Debug.WriteLine("Response: " + jsonResponse);
+
+                var weatherData = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+
+                string provider = "Ismeretlen";
+                double temperature = 0.0;
+                double windSpeed = 0.0;
+
+                // OpenWeatherMap
+                if (weatherData.main != null && weatherData.wind != null)
+                {
+                    provider = "OpenWeather";
+                    temperature = weatherData.main.temp ?? 0.0;
+                    windSpeed = (weatherData.wind.speed ?? 0.0);
+                }
+                // WeatherStack
+                else if (weatherData.current != null && weatherData.current.wind_speed != null)
+                {
+                    provider = "WeatherStack";
+                    temperature = weatherData.current.temperature ?? 0.0;
+                    windSpeed = weatherData.current.wind_speed ?? 0.0;
+                }
+                // WeatherAPI
+                else if (weatherData.current != null && weatherData.current.wind_kph != null)
+                {
+                    provider = "WeatherAPI";
+                    temperature = weatherData.current.temp_c ?? 0.0;
+                    windSpeed = weatherData.current.wind_kph ?? 0.0;
+
+                    _weatherIconUrl = "https:" + weatherData.current.condition.icon;
+                }
+
+                Debug.WriteLine($"Temperature: {temperature}°C");
+                Debug.WriteLine($"Wind Speed: {windSpeed} km/h");
+
+                return new CurrentWeatherResponse
+                {
+                    Provider = provider,
+                    Temperature = temperature,
+                    WindSpeed = windSpeed
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error: {ex.Message}");
+                return null;
+            }
         }
 
         public class WeatherDataCollection
@@ -56,8 +162,7 @@ namespace weather_app.Services
             string stringLat = latitude.ToString().Replace(',', '.');
             string stringLong = longitude.ToString().Replace(",", ".");
             string apiUrl = $"https://archive-api.open-meteo.com/v1/archive?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
-            string apiUrl2 = $"https://archive-api.open-meteo.com/v1/archive?latitude=" + stringLat + "&longitude=" + stringLong + "&start_date=" + year + "-08-25&end_date=" + year + "-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
-            //MessageBox.Show(apiUrl2);
+            
             try
             {
                 string jsonResponse = await GetWeatherDataAsync(apiUrl);
@@ -86,6 +191,7 @@ namespace weather_app.Services
                 string url = String.Concat(apiForecastPart1, coordpair.Item1.ToString().Replace(',', '.'), apiForecastPart2, coordpair.Item2.ToString().Replace(',', '.'), apiForecastPart3);
                 //string url = $"{apiForecastPart1}{coordpair.Item1.ToString().Replace(',', '.')}&{apiForecastPart2}{coordpair.Item2.ToString().Replace(',', '.')}{apiForecastPart3}";
                 string jsonResponse = await GetWeatherDataAsync(url);
+                //MessageBox.Show(jsonResponse);
 
                 if (!jsonResponse.StartsWith("Error:"))
                 {
@@ -109,62 +215,6 @@ namespace weather_app.Services
         {
             _xmlHandler.CreateOrReplaceXmlFile();
         }
-
-            /*
-
-                    public async Task<CurrentWeatherData> GetWeatherDataFromProviderAsync(string provider)
-                    {
-                        string apiUrl = string.Empty;
-
-                        string locationUrl = "http://ip-api.com/json/";
-                        using HttpClient client = new HttpClient();
-                        string locationResponse = await client.GetStringAsync(locationUrl);
-
-                        JObject locationData = JObject.Parse(locationResponse);
-                        double latitude = (double)locationData["lat"];
-                        double longitude = (double)locationData["lon"];
-
-                        // Szolgáltató alapján más-más url
-                        switch (provider.ToLower())
-                        {
-                            case "open-meteo":
-                                apiUrl = "https://api.open-meteo.com/v1/forecast?latitude="+latitude+"&longitude="+longitude+"&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
-                                break;
-
-                            case "provider2":
-                                apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
-                                break;
-
-                            /*case "provider2":
-                                apiUrl = "https://api.provider2.com/current?lat=52.52&lon=13.41"; // Példa URL
-                                break;
-                            default:
-                                throw new ArgumentException("Ismeretlen szolgáltató: " + provider);
-                        }
-
-                        try
-                        {
-                            HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
-                            response.EnsureSuccessStatusCode();
-
-                            string jsonResponse = await response.Content.ReadAsStringAsync();
-                            var data = JsonConvert.DeserializeObject<CurrentWeatherData>(jsonResponse);
-
-                            return new CurrentWeatherData
-                            {
-                                Provider = provider,
-                                Temperature = data.Temperature,
-                                WindSpeed = data.WindSpeed,
-                                Radiation = data.Radiation
-                            };
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Hiba történt az API hívás során: {ex.Message}");
-                            return new CurrentWeatherData(); // Üres
-                        }
-
-                    }*/
-        }
+    }
 }
 
