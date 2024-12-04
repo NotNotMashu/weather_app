@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,30 +14,76 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using weather_app.Models;
+using static weather_app.Views.DetailedHistoricalWeather;
+using weather_app.Services;
+using weather_app.ViewModels;
+using System.Diagnostics;
 
 namespace weather_app.Views
 {
     public partial class HistoricalComparison : UserControl
     {
+        List<ComparisonData> comparisonData = new List<ComparisonData>();
+        ObservableCollection<ComparisonData> comparisons;
         public HistoricalComparison()
         {
             InitializeComponent();
+            DataContext = this;
 
             string weatherDataFilePath = "weather_data.xml";
             string weatherForecastDataFilePath = "weather_forecast_data.xml";
 
             WeatherDataComparer comparer = new WeatherDataComparer(weatherDataFilePath, weatherForecastDataFilePath);
-            List<ComparisonData> comparisonData = comparer.CompareData();
+            comparisonData = comparer.CompareData();
 
         }
 
-        private async void LoadComparisonData(WeatherDataComparer comparer)
-        {
-            List<ComparisonData> comparisonData = await Task.Run(() => comparer.CompareData());
 
-            // Itt dolgozhatsz a comparisonData listával, például beállíthatod a UI-t
-            // Példa: egy ListBox-ba való megjelenítés
-            MyListBox.ItemsSource = comparisonData; // MyListBox az adott ListBox neve a UI-ban
+
+        private async void LoadComparisonData(List<ComparisonData> comparisonData)
+        {
+            if (int.TryParse(DayBox.Text, out int selectedDay) &&
+                int.TryParse(YearBox.Text, out int selectedYear))
+            {
+                // Filter and group the data by Coordinate
+                var groupedData = comparisonData
+                    .Select(data => new ComparisonData
+                    {
+                        Coordinate = data.Coordinate,
+                        comparisonHourlies = data.comparisonHourlies
+                            .Where(hourly => hourly.DateTime.Day == selectedDay && hourly.DateTime.Year == selectedYear)
+                            .ToList()
+                    })
+                    .Where(data => data.comparisonHourlies.Any()) // Only keep coordinates with relevant data
+                    .GroupBy(data => data.Coordinate)  // Group by Coordinate
+                    .Select(group => new ComparisonData
+                    {
+                        Coordinate = group.Key,
+                        comparisonHourlies = group.SelectMany(g => g.comparisonHourlies).ToList()
+                    })
+                    .ToList();
+
+                if (groupedData.Any())
+                {
+                    comparisons = new ObservableCollection<ComparisonData>(groupedData);
+                    ResultListView.ItemsSource = comparisons;
+                }
+                else
+                {
+                    MessageBox.Show("No data found for the selected criteria.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Invalid input for day and year.");
+            }
+        }
+
+
+
+        private void Search_Click(object sender, RoutedEventArgs e)
+        {
+            LoadComparisonData(comparisonData);
         }
     }
 }

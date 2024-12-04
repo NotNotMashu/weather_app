@@ -57,7 +57,7 @@ namespace weather_app
             // Időzítő beállítása
             _weatherUpdateTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMinutes(10)
+                Interval = TimeSpan.FromMinutes(20)
             };
             _weatherUpdateTimer.Tick += WeatherUpdateTimer_Tick;
         }
@@ -90,22 +90,33 @@ namespace weather_app
                     });
                 }
 
-                // Átlag hozzáadása
+                // Átlag
+                // Átlag hozzáadása, figyelmen kívül hagyva az "Ismeretlen" Provider-t
                 if (weatherResponses.Any())
                 {
-                    double avgTemp = weatherResponses.Average(r => r.Temperature);
-                    double avgWind = weatherResponses.Average(r => r.WindSpeed);
+                    // Szűrés: kizárjuk az "Ismeretlen" Provider-t
+                    var validResponses = weatherResponses.Where(r => r.Provider != "Ismeretlen").ToList();
 
-                    WeatherDataList.Add(new CurrentWeatherResponse
+                    // Ha marad érvényes adat
+                    if (validResponses.Any())
                     {
-                        Provider = "Átlag",
-                        Temperature = avgTemp,
-                        WindSpeed = avgWind
-                    });
+                        double avgTemp = validResponses.Average(r => r.Temperature);
+                        double avgWind = validResponses.Average(r => r.WindSpeed);
 
-                    IconUrl = _apiService.WeatherIconUrl;
+                        WeatherDataList.Add(new CurrentWeatherResponse
+                        {
+                            Provider = "Átlag",
+                            Temperature = avgTemp,
+                            WindSpeed = avgWind
+                        });
+
+                        IconUrl = _apiService.WeatherIconUrl;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nincs érvényes adat a jelenlegi időjárás átlagának számításához.");
+                    }
                 }
-
             }
             catch (Exception ex)
             {

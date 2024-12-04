@@ -38,7 +38,7 @@ namespace weather_app.Views
         public ObservableCollection<string> UniqueDates { get; set; } = new ObservableCollection<string>();
 
         private int _currentCoordinateIndex = 0;
-        private bool _isFilteringByDay = false; // Igaz: kiválasztott nap, Hamis: összes
+        private bool _isrunningFirstTime = true;
 
 
         public ForecastWeather()
@@ -51,6 +51,14 @@ namespace weather_app.Views
             if (UniqueDates.Count > 0)
             {
                 DateBox.SelectedIndex = 0;
+            }
+
+            if (_isrunningFirstTime == false)
+            {
+                Task.Delay(1000).ContinueWith(_ =>
+                {
+                    Dispatcher.Invoke(() => ShowSelectedDayData());
+                });
             }
         }
         public class WeatherViewModel
@@ -142,10 +150,10 @@ namespace weather_app.Views
             }
             else
             {
-                _currentCoordinateIndex = _coordinates.CoordinatePairs.Count - 1; 
+                _currentCoordinateIndex = _coordinates.CoordinatePairs.Count - 1;
             }
 
-            UpdateSelectedCoordinate(); 
+            UpdateSelectedCoordinate();
         }
 
         private void NextCoordinate()
@@ -158,10 +166,10 @@ namespace weather_app.Views
             }
             else
             {
-                _currentCoordinateIndex = 0; 
+                _currentCoordinateIndex = 0;
             }
 
-            UpdateSelectedCoordinate(); 
+            UpdateSelectedCoordinate();
         }
 
 
@@ -185,15 +193,7 @@ namespace weather_app.Views
         {
             OnPropertyChanged(nameof(SelectedCoordinate));
             RecalculateStatsForSelectedCoordinate();
-
-            if (_isFilteringByDay)
-            {
-                ShowSelectedDayData(); 
-            }
-            else
-            {
-                ShowAllDayData(); 
-            }
+            ShowSelectedDayData();
         }
 
 
@@ -221,75 +221,23 @@ namespace weather_app.Views
             {
                 string tag = clickedButton.Tag as string;
 
-                if (tag == "all")
-                {
-                    Debug.WriteLine("Nincs kiválasztott nap");
-                    _isFilteringByDay = false;
-                    ShowAllDayData();
-                }
-                else
-                {
-                    _isFilteringByDay = true;
-                    ShowSelectedDayData();
-                }
+                _isrunningFirstTime = false;
+                ShowSelectedDayData();
             }
         }
 
-        private void ShowAllDayData()
-{
-    DailyWeather.Clear();
-
-    var allCoordinatesHourlyData = _loadedWeatherRecords
-        .SelectMany(record => record.HourlyDataList)
-        .ToList();
-
-    // Csoportosítás napokra
-    var groupedByDay = allCoordinatesHourlyData
-        .GroupBy(hourly => DateTime.Parse(hourly.Time).ToString("yyyy-MM-dd"))
-        .Select(group => new WeatherRecordHourly
-        {
-            Time = group.Key, // Napok szerint csoportosítva
-            Temperature = Math.Round(group.Average(hourly => hourly.Temperature), 2),
-            WindSpeed = Math.Round(group.Average(hourly => hourly.WindSpeed), 2),
-            Radiation = Math.Round(group.Average(hourly => hourly.Radiation), 2),
-            MinTemperature = group.Min(hourly => hourly.Temperature),
-            MaxTemperature = group.Max(hourly => hourly.Temperature),
-            MaxWindSpeed = group.Max(hourly => hourly.WindSpeed),
-            MinRadiation = group.Min(hourly => hourly.Radiation),
-            MaxRadiation = group.Max(hourly => hourly.Radiation)
-        }).ToList();
-
-    if (!groupedByDay.Any())
-    {
-        MessageBox.Show("Nincs elérhető adat!");
-        return;
-    }
-
-    foreach (var hourlyData in groupedByDay)
-    {
-        DailyWeather.Add(hourlyData);
-    }
-
-    DefaultDataGrid.Visibility = Visibility.Collapsed; // Elrejtjük a DefaultDataGrid-et
-    DetailedDataGrid.Visibility = Visibility.Visible; // Az összes napot részletesen a DetailedDataGrid-ben mutatjuk
-    DetailedDataGrid.ItemsSource = groupedByDay; // Beállítjuk az adatokat
-}
-
-
-
-
         private void ShowSelectedDayData()
         {
-            string selectedDate = DateBox.SelectedItem.ToString();
+            
 
-            if (selectedDate == "Minden nap")
+            if(_isrunningFirstTime == true)
             {
-                _isFilteringByDay = false;
-                ShowAllDayData(); // Minden nap esetén a detailed táblázatot szeretnénk látni
+                _isrunningFirstTime = false;
                 return;
             }
 
-            _isFilteringByDay = true;
+            string selectedDate = DateBox.SelectedItem.ToString();
+
             DailyWeather.Clear();
 
             IEnumerable<WeatherRecordHourly> selectedData;
@@ -302,10 +250,10 @@ namespace weather_app.Views
 
                 // Részletes táblázat megjelenítése, ha az összes koordinátra van szükség
                 var groupedByCoordinate = selectedData
-                    .GroupBy(hourly => hourly.Time)
+                    .GroupBy(hourly => DateTime.Parse(hourly.Time).Hour)
                     .Select(group => new WeatherRecordHourly
                     {
-                        Time = group.Key, // Az összes koordinátra csoportosítva
+                        Time = $"{group.Key}:00",
                         Temperature = Math.Round(group.Average(hourly => hourly.Temperature), 2),
                         WindSpeed = Math.Round(group.Average(hourly => hourly.WindSpeed), 2),
                         Radiation = Math.Round(group.Average(hourly => hourly.Radiation), 2),
@@ -350,7 +298,7 @@ namespace weather_app.Views
                     .GroupBy(hourly => DateTime.Parse(hourly.Time).Hour)
                     .Select(group => new WeatherRecordHourly
                     {
-                        Time = $"{group.Key}:00", // Órák szerint csoportosítva
+                        Time = $"{group.Key}:00",
                         Temperature = Math.Round(group.Average(hourly => hourly.Temperature), 2),
                         WindSpeed = Math.Round(group.Average(hourly => hourly.WindSpeed), 2),
                         Radiation = Math.Round(group.Average(hourly => hourly.Radiation), 2),
@@ -431,7 +379,7 @@ namespace weather_app.Views
                 {
                     var allCoordDailyStatsList = new List<DailyStatistics>();
                     var groupedByDate = dailyStatsList
-                        .GroupBy(ds => ds.Date) 
+                        .GroupBy(ds => ds.Date)
                         .ToDictionary(g => g.Key, g => g.ToList());
 
                     foreach (var dateGroup in groupedByDate)
@@ -487,7 +435,6 @@ namespace weather_app.Views
                 DailyWeather.Add(hourlyData);
             }
         }
-
 
         private void All_Coordinates_Click(object sender, RoutedEventArgs e)
         {

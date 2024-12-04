@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -23,44 +24,71 @@ public class WeatherDataComparer
         List<WeatherData> weatherDataRecords = ReadWeatherDataFromXml(_weatherDataFilePath);
         List<WeatherData> weatherForecastDataRecords = ReadWeatherDataFromXml(_weatherForecastDataFilePath);
 
-        // Összehasonlítjuk a rekordokat az azonos koordináták és időpontok alapján
+        // Összehasonlítjuk a rekordokat az azonos koordináták és idő alapján
         var matchingRecords = from weatherData in weatherDataRecords
                               join forecastData in weatherForecastDataRecords
-                              on new { weatherData.latitude, weatherData.longitude } equals new { forecastData.latitude, forecastData.longitude }
-                              from timeIndex in Enumerable.Range(0, weatherData.hourly.time.Count)
-                              where weatherData.hourly.time[timeIndex] == forecastData.hourly.time[timeIndex]
+                              on new { weatherData.latitude, weatherData.longitude }
+                              equals new { forecastData.latitude, forecastData.longitude }
+                              let weatherTimes = weatherData.hourly.time.Select(t => DateTime.Parse(t)).ToList()
+                              let forecastTimes = forecastData.hourly.time.Select(t => DateTime.Parse(t)).ToList()
+                              where weatherTimes.Intersect(forecastTimes).Any() // Csak ha van közös időpont
                               select new
                               {
-                                  weatherData.latitude,
-                                  weatherData.longitude,
-                                  time = weatherData.hourly.time[timeIndex],
-                                  WeatherTemperature = weatherData.hourly.temperature_2m[timeIndex],
-                                  ForecastTemperature = forecastData.hourly.temperature_2m[timeIndex],
-                                  WeatherWindSpeed = weatherData.hourly.wind_speed_10m[timeIndex],
-                                  ForecastWindSpeed = forecastData.hourly.wind_speed_10m[timeIndex],
-                                  WeatherRadiation = weatherData.hourly.direct_radiation[timeIndex],
-                                  ForecastRadiation = forecastData.hourly.direct_radiation[timeIndex]
+                                  Coordinate = $"{weatherData.latitude:F2} {weatherData.longitude:F6}",
+                                  HourlyData = weatherTimes
+                                      .Select((time, index) => new ComparisonHourly
+                                      {
+                                          Time = weatherData.hourly.time[index], // Tároljuk a Time stringet
+                                          RecordedTemp = weatherData.hourly.temperature_2m[index],
+                                          RecordedWind = weatherData.hourly.wind_speed_10m[index],
+                                          RecordedRad = weatherData.hourly.direct_radiation[index],
+                                          ForecastTemp = forecastData.hourly.temperature_2m[index],
+                                          ForecastWind = forecastData.hourly.wind_speed_10m[index],
+                                          ForecastRad = forecastData.hourly.direct_radiation[index]
+                                      })
+                                      .Where(hourly => forecastTimes.Contains(hourly.DateTime)) // Csak egyező időpontok
+                                      .ToList()
                               };
 
+        // Létrehozzuk a ComparisonData listát
         List<ComparisonData> comparisonData = new List<ComparisonData>();
+
         foreach (var record in matchingRecords)
         {
             comparisonData.Add(new ComparisonData
             {
-                coordinate = record.latitude.ToString("F2") + " " + record.longitude.ToString("F6"),
-                time = record.time,
-                recordedTemp = record.WeatherTemperature,
-                recordedWind = record.WeatherWindSpeed,
-                recordedRad = record.WeatherRadiation,
-                forecastTemp = record.ForecastTemperature,
-                forecastWind = record.ForecastWindSpeed,
-                forecastRad = record.ForecastRadiation
+                Coordinate = record.Coordinate,
+                comparisonHourlies = record.HourlyData
             });
         }
 
         return comparisonData;
     }
 
+    public ObservableCollection<ComparisonData> GroupComparisonData(List<ComparisonData> comparisonData)
+    {
+        // Itt csoportosítjuk a koordinátákat
+        var groupedData = new ObservableCollection<ComparisonData>();
+
+        // Csoportosítás koordináták alapján
+        var groupedCoordinates = comparisonData
+            .GroupBy(d => d.Coordinate)
+            .ToList();
+
+        foreach (var group in groupedCoordinates)
+        {
+            // Az egyes koordinátákhoz hozzáadjuk az óránkénti adatokat
+            var comparisonDataForCoordinate = new ComparisonData
+            {
+                Coordinate = group.Key,
+                comparisonHourlies = group.SelectMany(d => d.comparisonHourlies).ToList()
+            };
+
+            groupedData.Add(comparisonDataForCoordinate);
+        }
+
+        return groupedData;
+    }
 
     private List<WeatherData> ReadWeatherDataFromXml(string filePath)
     {
