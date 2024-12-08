@@ -74,35 +74,53 @@ namespace weather_app.Services
             doc.Save(_filePath);
         }
 
-        public List<string> GetAllRecords()
+        public List<WeatherData> GetAllRecords()
         {
-            List<string> records = new List<string>();
+            List<WeatherData> weatherDataList = new List<WeatherData>();
 
             if (!File.Exists(_filePath))
-                return records;
+                return weatherDataList;
 
             XDocument doc = XDocument.Load(_filePath);
-            string fileContent = File.ReadAllText(_filePath);
-            //MessageBox.Show($"XML tartalom:\n{fileContent}");
 
             foreach (var record in doc.Root.Elements("Record"))
             {
-                string provider = record.Element("Provider")?.Value ?? "Unknown";
-                string latitude = record.Element("Latitude")?.Value ?? "Unknown";
-                string longitude = record.Element("Longitude")?.Value ?? "Unknown";
-                string time = record.Element("Time")?.Value ?? "Unknown";
-                string temperature = record.Element("Temperature")?.Value ?? "Unknown";
-                string windSpeed = record.Element("WindSpeed")?.Value ?? "Unknown";
-                string radiation = record.Element("Radiation")?.Value ?? "Unknown";
+                string latitudeStr = record.Element("Latitude")?.Value ?? "0";
+                string longitudeStr = record.Element("Longitude")?.Value ?? "0";
+                double latitude = double.TryParse(latitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double lat) ? lat : 0;
+                double longitude = double.TryParse(longitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double lon) ? lon : 0;
 
-                string recordString = $"{latitude}, {longitude} | {time} | Temperature: {temperature}, WindSpeed: {windSpeed}, Radiation: {radiation}";
-                records.Add(recordString);
+                string time = record.Element("Time")?.Value ?? "Unknown";
+                string temperatureStr = record.Element("Temperature")?.Value ?? "0";
+                string windSpeedStr = record.Element("WindSpeed")?.Value ?? "0";
+                string radiationStr = record.Element("Radiation")?.Value ?? "0";
+
+                double temperature = double.TryParse(temperatureStr, out double temp) ? temp : 0;
+                double windSpeed = double.TryParse(windSpeedStr, out double wind) ? wind : 0;
+                double radiation = double.TryParse(radiationStr, out double rad) ? rad : 0;
+
+                HourlyData hourlyData = new HourlyData
+                {
+                    time = new List<string> { time },
+                    temperature_2m = new List<double> { temperature },
+                    wind_speed_10m = new List<double> { windSpeed },
+                    direct_radiation = new List<double> { radiation }
+                };
+
+                WeatherData weatherData = new WeatherData
+                {
+                    latitude = latitude,
+                    longitude = longitude,
+                    hourly = hourlyData
+                };
+
+                weatherDataList.Add(weatherData);
             }
 
-            return records;
+            return weatherDataList;
         }
 
-        public List<string> GetFilteredRecords(
+        public List<WeatherData> GetFilteredRecords(
             string startLatitude,
             string endLatitude,
             int startYear,
@@ -111,17 +129,17 @@ namespace weather_app.Services
             int endDay,
             int step)
         {
-            List<string> filteredRecords = new List<string>();
+            List<WeatherData> filteredRecords = new List<WeatherData>();
 
             try
             {
-                var allRecords = GetAllRecords();
+                var allRecords = GetAllRecords(); // Get the list of WeatherData objects
 
                 // Szűrés koordinátákra
                 var coordinateFilteredRecords = (!startLatitude.Equals("skip"))
                     ? allRecords
-                    .Where(record => IsWithinCoordinates(record, startLatitude, endLatitude))
-                    .ToList()
+                        .Where(record => IsWithinCoordinates(record, startLatitude, endLatitude))
+                        .ToList()
                     : allRecords;
 
                 // Szűrés évekre (csak ha nem a teljes tartomány van kiválasztva)
@@ -146,7 +164,7 @@ namespace weather_app.Services
             return filteredRecords;
         }
 
-        private double GetLatitudeFromRecord(string record)
+        /*private double GetLatitudeFromRecord(string record)
         {
             try
             {
@@ -170,55 +188,44 @@ namespace weather_app.Services
             }
 
             return 0; 
-        }
+        }*/
 
-        private bool AreDoublesEqual(double value1, double value2, double tolerance = 0.0001)
+        /*private bool AreDoublesEqual(double value1, double value2, double tolerance = 0.0001)
         {
             return Math.Abs(value1 - value2) < tolerance;
-        }
+        }*/
 
-        private bool IsWithinCoordinates(string record, string startLat, string endLat)
+        private bool IsWithinCoordinates(WeatherData record, string startLat, string endLat)
         {
-            var latitude = GetLatitudeFromRecord(record);
+            var latitude = record.latitude;
             double startLatitude = double.Parse(startLat.Replace(',', '.'), CultureInfo.InvariantCulture);
             double endLatitude = double.Parse(endLat.Replace(',', '.'), CultureInfo.InvariantCulture);
-            //MessageBox.Show("double startlat: " + startLatitude + " endlat: "+ endLatitude);
 
             double minLatitude = Math.Min(startLatitude, endLatitude);
             double maxLatitude = Math.Max(startLatitude, endLatitude);
 
-            return Math.Abs(latitude - startLatitude) < 0.001 ||  // Azonos érték esetén
-                   (latitude >= minLatitude && latitude <= maxLatitude);
+            bool isWithin = Math.Abs(latitude - startLatitude) < 0.001 || (latitude >= minLatitude && latitude <= maxLatitude);
+            return isWithin;
         }
 
-        private bool IsWithinYear(string record, int startYear, int endYear, int step)
+        private bool IsWithinYear(WeatherData record, int startYear, int endYear, int step)
         {
-            var yearRegex = new Regex(@"\b(\d{4})\b"); // Év kinyerése
-            var match = yearRegex.Match(record);
+            var time = DateTime.Parse(record.hourly.time[0]);
+            int year = time.Year;
 
-            if (match.Success && int.TryParse(match.Value, out int year))
-            {
-                return (year >= startYear && year <= endYear && ((year - startYear) % step == 0)) || year == endYear;
-            }
-
-            return false;
+            return year >= startYear && year <= endYear && ((year - startYear) % step == 0) || year == endYear;
         }
 
-        private bool IsWithinDays(string record, int startDay, int endDay)
+        private bool IsWithinDays(WeatherData record, int startDay, int endDay)
         {
-            var dateRegex = new Regex(@"\d{4}-\d{2}-(\d{2})"); // Nap kinyerése
-            var match = dateRegex.Match(record);
+            var time = DateTime.Parse(record.hourly.time[0]);
+            int day = time.Day;
 
-            if (match.Success && int.TryParse(match.Groups[1].Value, out int day))
-            {
-                return day >= startDay && day <= endDay;
-            }
-
-            return false;
+            return day >= startDay && day <= endDay;
         }
 
 
-        public List<WeatherRecord> ParseRecords(List<string> recordStrings)
+        /*public List<WeatherRecord> ParseRecords(List<string> recordStrings)
         {
             List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
 
@@ -263,38 +270,27 @@ namespace weather_app.Services
             }
 
             return weatherRecords;
+        }*/
+
+        public List<WeatherData> GetFilteredRecordsSeparated(int year, int day)
+        {
+            List<WeatherData> filteredRecords = GetFilteredRecords("skip", "skip", year, year, day, day, 1);
+
+            return filteredRecords;
         }
 
-        public List<WeatherRecord> GetFilteredRecordsSeparated(int year, int day)
+        public List<WeatherData> GetFilteredRecordsSeparated(int day)
         {
-            List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
-            var filteredRecords = GetFilteredRecords("skip", "skip", year, year, day, day, 1);
-
-            var weatherRecordsFromParse = ParseRecords(filteredRecords);
-
-            if (weatherRecordsFromParse != null)
-            {
-                weatherRecords.AddRange(weatherRecordsFromParse);
-            }
-
-            return weatherRecords;
-        }
-
-        public List<WeatherRecord> GetFilteredRecordsSeparated(int day)
-        {
-            List<WeatherRecord> weatherRecords = new List<WeatherRecord>();
+            List<WeatherData> weatherRecords = new List<WeatherData>();
             for (int year = 2014; year <= 2024; year++)
             {
                 var filteredRecords = GetFilteredRecords("skip", "skip", year, year, day, day, 1);
 
-                var weatherRecordsFromParse = ParseRecords(filteredRecords);
-
-                if (weatherRecordsFromParse != null)
+                if (filteredRecords != null)
                 {
-                    weatherRecords.AddRange(weatherRecordsFromParse);
+                    weatherRecords.AddRange(filteredRecords);
                 }
             }
-
             return weatherRecords;
         }
 

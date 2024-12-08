@@ -89,11 +89,12 @@ namespace weather_app.Views
                     var temperatures = forecastData.hourly.temperature_2m;
                     var windSpeeds = forecastData.hourly.wind_speed_10m;
                     var radiations = forecastData.hourly.direct_radiation;
-                    string coordinate = $"{coordpair.Item1} {coordpair.Item2}";
+                    //string coordinate = $"{coordpair.Item1} {coordpair.Item2}";
 
                     var weatherRecord = new WeatherRecord
                     {
-                        Coordinate = coordinate,
+                        Latitude = coordpair.Item1,
+                        Longitude = coordpair.Item2,
                         HourlyDataList = new List<WeatherRecordHourly>()
                     };
 
@@ -282,7 +283,7 @@ namespace weather_app.Views
             else
             {
                 var selectedRecord = _loadedWeatherRecords
-                    .FirstOrDefault(record => record.Coordinate == SelectedCoordinate);
+                    .FirstOrDefault(record => $"{record.Latitude} {record.Longitude}" == SelectedCoordinate);
 
                 if (selectedRecord == null)
                 {
@@ -334,7 +335,7 @@ namespace weather_app.Views
 
             foreach (var record in weatherRecords)
             {
-                if (_currentCoordinateIndex != -1 && record.Coordinate != SelectedCoordinate) continue; // nem az összes vagy a jelenleg kiválasztott esetén
+                if (_currentCoordinateIndex != -1 && $"{record.Latitude} {record.Longitude}" != SelectedCoordinate) continue; // nem az összes vagy a jelenleg kiválasztott esetén
 
                 // Napokra bontás
                 var dailyData = GroupByDay(record);
@@ -422,7 +423,7 @@ namespace weather_app.Views
             DailyWeather.Clear();
 
             var selectedRecord = _loadedWeatherRecords
-                .FirstOrDefault(record => record.Coordinate == SelectedCoordinate);
+                .FirstOrDefault(record => $"{record.Latitude} {record.Longitude}" == SelectedCoordinate);
 
             if (selectedRecord == null)
             {

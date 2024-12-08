@@ -68,14 +68,23 @@ namespace weather_app.Views
                 String step = stepLong[1];
 
                 // Rekordok szűrése
-                List<string> coordinateFilteredRecords = _xmlDataHandler.GetFilteredRecords(startLatitude, endLatitude, startYear, endYear, startDay, endDay, int.Parse(step));
+                List<WeatherData> coordinateFilteredRecords = _xmlDataHandler.GetFilteredRecords(startLatitude, endLatitude, startYear, endYear, startDay, endDay, int.Parse(step));
 
                 // Rekordok megjelenítése a ListView-ban
                 Records.Clear();
                 foreach (var record in coordinateFilteredRecords)
                 {
-                    //MessageBox.Show(record);
-                    Records.Add(record);
+                    for (int i = 0; i < record.hourly.time.Count; i++)
+                    {
+                        string recordString = $"{record.latitude} {record.longitude} | " +
+                                              $"Time: {record.hourly.time[i].Replace('T', ' ')} | " +
+                                              $"Temperature: {record.hourly.temperature_2m[i]} | " +
+                                              $"WindSpeed: {record.hourly.wind_speed_10m[i]} | " +
+                                              $"Radiation: {record.hourly.direct_radiation[i]}";
+
+                        // Hozzáadás a Records listához
+                        Records.Add(recordString);
+                    }
                 }
 
                 if (coordinateFilteredRecords.Count == 0)
@@ -112,12 +121,21 @@ namespace weather_app.Views
         {
             try
             {
-                List<string> allRecords = _xmlDataHandler.GetAllRecords();
+                List<WeatherData> allRecords = _xmlDataHandler.GetAllRecords();
 
                 Records.Clear();
                 foreach (var record in allRecords)
                 {
-                    Records.Add(record);
+                    for (int i = 0; i < record.hourly.time.Count; i++)
+                    {
+                        string recordString = $"{record.latitude} {record.longitude} | " +
+                                              $"Time: {record.hourly.time[i].Replace('T', ' ')} | " +
+                                              $"Temperature: {record.hourly.temperature_2m[i]} | " +
+                                              $"WindSpeed: {record.hourly.wind_speed_10m[i]} | " +
+                                              $"Radiation: {record.hourly.direct_radiation[i]}";
+
+                        Records.Add(recordString);
+                    }
                 }
 
                 if (Records.Count > 0)

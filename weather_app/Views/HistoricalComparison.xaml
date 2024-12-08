@@ -27,7 +27,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Day: 08 - " VerticalAlignment="Center" Grid.Column="0"/>
+                    <TextBlock Text="Nap: 08 - " VerticalAlignment="Center" Grid.Column="0"/>
                     <ComboBox x:Name="DayBox" SelectedIndex="0" Grid.Column="1">
                         <ComboBoxItem Content="25" />
                         <ComboBoxItem Content="26" />
@@ -45,7 +45,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Year: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
+                    <TextBlock Text="Év: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
                     <ComboBox x:Name="YearBox" SelectedIndex="0" Grid.Column="1">
                         <ComboBoxItem Content="2022" />
                         <ComboBoxItem Content="2023" />
@@ -64,8 +64,7 @@
                         <DataTemplate>
                             <StackPanel Margin="5">
                                 <!-- Coordinate, only once for each ComparisonData -->
-                                <TextBlock Text="{Binding Coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
-
+                                <TextBlock Text="{Binding Coordinate, StringFormat='{}{0:F2}'}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
                                 <!-- Hourly Data Comparison -->
                                 <ItemsControl ItemsSource="{Binding comparisonHourlies}">
                                     <ItemsControl.ItemTemplate>

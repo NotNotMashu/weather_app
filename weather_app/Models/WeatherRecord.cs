@@ -8,7 +8,8 @@ namespace weather_app.ViewModels
 {
     public class WeatherRecord
     {
-        public string Coordinate { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         public List<WeatherRecordHourly> HourlyDataList { get; set; }
     }
 

@@ -13,4 +13,6 @@ public class WeatherData
     public double latitude { get; set; }
     public double longitude { get; set; }
     public HourlyData hourly { get; set; }
+
+    public string coordinate => $"{latitude}, {longitude}";
 }

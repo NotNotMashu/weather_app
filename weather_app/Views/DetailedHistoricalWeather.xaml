@@ -74,18 +74,21 @@
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="5">
-                                    <!-- Koordináta -->
-                                    <TextBlock Text="{Binding Coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
-                                    <ItemsControl ItemsSource="{Binding HourlyDataList}">
+                                    <!-- Koordináta, csak egyszer jelenik meg -->
+                                    <TextBlock Text="{Binding coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
+
+                                    <ItemsControl ItemsSource="{Binding hourly}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel>
                                                     <!-- Óra -->
-                                                    <TextBlock Text="{Binding Time}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
-                                                    <!-- Értékek -->
-                                                    <TextBlock Text="{Binding Temperature, StringFormat='Hőmérséklet: {0} °C'}" Margin="0,2"/>
-                                                    <TextBlock Text="{Binding WindSpeed, StringFormat='Szélsebesség: {0} km/h'}" Margin="0,2"/>
-                                                    <TextBlock Text="{Binding Radiation, StringFormat='Sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding time}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
+                                                    <!-- Hőmérséklet -->
+                                                    <TextBlock Text="{Binding temperature_2m, StringFormat='Hőmérséklet: {0} °C'}" Margin="0,2"/>
+                                                    <!-- Szélsebesség -->
+                                                    <TextBlock Text="{Binding wind_speed_10m, StringFormat='Szélsebesség: {0} km/h'}" Margin="0,2"/>
+                                                    <!-- Sugárzás -->
+                                                    <TextBlock Text="{Binding direct_radiation, StringFormat='Sugárzás: {0} W/m²'}" Margin="0,2"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -94,12 +97,11 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-
                 </Grid>
             </Grid>
 
             <Grid Grid.Column="1" Margin="5" HorizontalAlignment="Stretch">
-                <ListView x:Name="AvgDetailsListView" ItemsSource="{Binding Details}">
+                <ListView x:Name="AvgDetailsListView" ItemsSource="{Binding dailyStats}">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn DisplayMemberBinding="{Binding}" />
