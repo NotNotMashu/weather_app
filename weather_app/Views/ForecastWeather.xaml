@@ -47,36 +47,56 @@
                     <TextBlock Text="Napi előrejelzés" FontSize="18" Margin="0,0,0,10" HorizontalAlignment="Center" />
 
                     <!-- Alapértelmezett DataGrid -->
-                    <DataGrid x:Name="DefaultDataGrid"
-                              ItemsSource="{Binding DailyWeather}" 
-                              AutoGenerateColumns="False" 
-                              Margin="10" 
-                              IsReadOnly="True">
+                    <DataGrid x:Name="DefaultDataGrid" ItemsSource="{Binding DailyWeather}"  AutoGenerateColumns="False" Margin="10" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Időpont" Binding="{Binding Time}" />
                             <DataGridTextColumn Header="Hőmérséklet (°C)" Binding="{Binding Temperature}" />
                             <DataGridTextColumn Header="Szélsebesség (km/h)" Binding="{Binding WindSpeed}" />
-                            <DataGridTextColumn Header="Sugárzás (W/m²)" Binding="{Binding Radiation}" />
+                            <DataGridTextColumn Header="Szélirány (°)" Binding="{Binding WindDirection}" />
+                            <DataGridTextColumn Header="Közvetlen Sugárzás (W/m²)" Binding="{Binding DirectRadiation}" />
+                            <DataGridTextColumn Header="DHI (W/m²)" Binding="{Binding DiffuseRadiation}" />
+                            <DataGridTextColumn Header="DHI Instant (W/m²)" Binding="{Binding DiffuseRadiationInstant}" />
+                            <DataGridTextColumn Header="DNI (W/m²)" Binding="{Binding DirectNormalIrradiance}" />
+                            <DataGridTextColumn Header="DNI Instant (W/m²)" Binding="{Binding DirectNormalIrradianceInstant}" />
                         </DataGrid.Columns>
                     </DataGrid>
 
                     <!-- Részletes DataGrid -->
-                    <DataGrid x:Name="DetailedDataGrid"
-                              Visibility="Collapsed" 
-                              AutoGenerateColumns="False" 
-                              Margin="10" 
-                              IsReadOnly="True">
+                    <DataGrid x:Name="DetailedDataGrid" Visibility="Collapsed"  AutoGenerateColumns="False"   Margin="10" IsReadOnly="True" FrozenColumnCount="1">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Időpont" Binding="{Binding Time}" />
+                            
                             <DataGridTextColumn Header="Min Hőmérséklet (°C)" Binding="{Binding MinTemperature}" />
                             <DataGridTextColumn Header="Max Hőmérséklet (°C)" Binding="{Binding MaxTemperature}" />
                             <DataGridTextColumn Header="Átlag Hőmérséklet (°C)" Binding="{Binding Temperature}" />
+
                             <DataGridTextColumn Header="Min Szélsebesség (km/h)" Binding="{Binding MinWindSpeed}" />
                             <DataGridTextColumn Header="Max Szélsebesség (km/h)" Binding="{Binding MaxWindSpeed}" />
                             <DataGridTextColumn Header="Átlag Szélsebesség (km/h)" Binding="{Binding WindSpeed}" />
+
+                            <DataGridTextColumn Header="Min Szélirány (°)" Binding="{Binding MinWindDirection}" />
+                            <DataGridTextColumn Header="Max Szélirány (°)" Binding="{Binding MaxWindDirection}" />
+                            <DataGridTextColumn Header="Átlag Szélirány (°)" Binding="{Binding WindDirection}" />
+
                             <DataGridTextColumn Header="Min Sugárzás (W/m²)" Binding="{Binding MinRadiation}" />
                             <DataGridTextColumn Header="Max Sugárzás (W/m²)" Binding="{Binding MaxRadiation}" />
-                            <DataGridTextColumn Header="Átlag Sugárzás (W/m²)" Binding="{Binding Radiation}" />
+                            <DataGridTextColumn Header="Átlag Sugárzás (W/m²)" Binding="{Binding DirectRadiation}" />
+
+                            <DataGridTextColumn Header="Min DHI (W/m²)" Binding="{Binding MinDiffuseRadiation}" />
+                            <DataGridTextColumn Header="Max DHI (W/m²)" Binding="{Binding MaxDiffuseRadiation}" />
+                            <DataGridTextColumn Header="Átlag DHI (W/m²)" Binding="{Binding DiffuseRadiation}" />
+
+                            <DataGridTextColumn Header="Min DNI (W/m²)" Binding="{Binding MinDirectNormalIrradiance}" />
+                            <DataGridTextColumn Header="Max DNI(W/m²)" Binding="{Binding MaxDirectNormalIrradiance}" />
+                            <DataGridTextColumn Header="Átlag DNI (W/m²)" Binding="{Binding DirectNormalIrradiance}" />
+
+                            <DataGridTextColumn Header="Min Intant DHI (W/m²)" Binding="{Binding MinDiffuseRadiationInstant}" />
+                            <DataGridTextColumn Header="Max Intant DHI (W/m²)" Binding="{Binding MaxDiffuseRadiationInstant}" />
+                            <DataGridTextColumn Header="Átlag Intant DHI (W/m²)" Binding="{Binding DiffuseRadiationInstant}" />
+
+                            <DataGridTextColumn Header="Min Intant DNI (W/m²)" Binding="{Binding MinDirectNormalIrradianceInstant}" />
+                            <DataGridTextColumn Header="Max Intant DNI (W/m²)" Binding="{Binding MaxDirectNormalIrradianceInstant}" />
+                            <DataGridTextColumn Header="Átlag Intant DNI (W/m²)" Binding="{Binding DirectNormalIrradianceInstant}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -86,21 +106,42 @@
             <Grid Grid.Row="2" HorizontalAlignment="Center">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Heti előrejelzés" FontSize="18" Margin="0,0,0,10" HorizontalAlignment="Center" />
-
-                    <DataGrid ItemsSource="{Binding WeeklyWeather}" 
-                              AutoGenerateColumns="False" 
-                              Margin="10" 
-                              IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding WeeklyWeather}" AutoGenerateColumns="False"  Margin="10"  IsReadOnly="True" MinColumnWidth="14">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Dátum" Binding="{Binding Date}" />
-                            <DataGridTextColumn Header="Min Hőmérséklet" Binding="{Binding MinTemperature}" />
-                            <DataGridTextColumn Header="Max Hőmérséklet" Binding="{Binding MaxTemperature}" />
-                            <DataGridTextColumn Header="Átlag Hőmérséklet" Binding="{Binding AverageTemperature}" />
-                            <DataGridTextColumn Header="Min Szélsebesség" Binding="{Binding MinWindSpeed}" />
-                            <DataGridTextColumn Header="Max Szélsebesség" Binding="{Binding MaxWindSpeed}" />
-                            <DataGridTextColumn Header="Átlag Szélsebesség" Binding="{Binding AverageWindSpeed}" />
-                            <DataGridTextColumn Header="Max Sugárzás" Binding="{Binding MaxRadiation}" />
-                            <DataGridTextColumn Header="Átlag Sugárzás" Binding="{Binding AverageRadiation}" />
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinTemperature}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxTemperature}" />
+                            <DataGridTextColumn Header="Átlag Hőmérséklet (°C)" Binding="{Binding AverageTemperature}" />
+                            
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinWindSpeed}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxWindSpeed}" />
+                            <DataGridTextColumn Header="Átlag Szélsebesség (km/h)" Binding="{Binding AverageWindSpeed}" />
+
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinWindDirection}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxWindDirection}" />
+                            <DataGridTextColumn Header="Átlag Szélirány (°)" Binding="{Binding AverageWindDirection}" />
+
+                            
+                            
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinDirectRadiation}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxDirectRadiation}" />
+                            <DataGridTextColumn Header="Átlag D.Sugárzás (W/m²)" Binding="{Binding AverageDirectRadiation}" />
+
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinDiffuseRadiation}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxDiffuseRadiation}" />
+                            <DataGridTextColumn Header="Átlag DHI (W/m²)" Binding="{Binding AverageDiffuseRadiation}" />
+
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinDiffuseRadiationInstant}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxDiffuseRadiationInstant}" />
+                            <DataGridTextColumn Header="Átlag Instant DHI (W/m²)" Binding="{Binding AverageDiffuseRadiationInstant}" />
+
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinDirectNormalIrradiance}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxDirectNormalIrradiance}" />
+                            <DataGridTextColumn Header="Átlag DNI (W/m²)" Binding="{Binding AverageDirectNormalIrradiance}" />
+
+                            <DataGridTextColumn Header="Min" Binding="{Binding MinDirectNormalIrradianceInstant}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding MaxDirectNormalIrradianceInstant}" />
+                            <DataGridTextColumn Header="Átlag Instant DNI (W/m²)" Binding="{Binding AverageDirectNormalIrradianceInstant}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>

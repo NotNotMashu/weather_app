@@ -5,12 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:weather_app.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="1000">
     <Grid>
         <Grid Margin="10,20,10,20" HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="600"/>
+                <ColumnDefinition Width="750"/>
             </Grid.ColumnDefinitions>
 
             <!-- First column for filters -->
@@ -27,7 +27,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Day: 08 - " VerticalAlignment="Center" Grid.Column="0"/>
+                    <TextBlock Text="Nap: 08 - " VerticalAlignment="Center" Grid.Column="0"/>
                     <ComboBox x:Name="DayBox" SelectedIndex="0" Grid.Column="1">
                         <ComboBoxItem Content="25" />
                         <ComboBoxItem Content="26" />
@@ -45,7 +45,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Year: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
+                    <TextBlock Text="Év: " VerticalAlignment="Center" Grid.Column="0" Margin="0,0,5,0"/>
                     <ComboBox x:Name="YearBox" SelectedIndex="0" Grid.Column="1">
                         <ComboBoxItem Content="2022" />
                         <ComboBoxItem Content="2023" />
@@ -59,46 +59,94 @@
 
             <!-- 2. oszlop -->
             <Grid Grid.Column="1" Margin="5" HorizontalAlignment="Stretch">
-                <ListView x:Name="ResultListView" Grid.Row="2" Margin="5" ItemsSource="{Binding comparisons}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="5">
-                                <!-- Coordinate, only once for each ComparisonData -->
-                                <TextBlock Text="{Binding Coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ListView x:Name="ResultListView" Grid.Row="2" Margin="5" ItemsSource="{Binding comparisons}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="5">
+                                    <!-- Coordinate, only once for each ComparisonData -->
+                                    <TextBlock Text="{Binding Coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
 
-                                <!-- Hourly Data Comparison -->
-                                <ItemsControl ItemsSource="{Binding comparisonHourlies}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel>
-                                                <!-- Time -->
-                                                <TextBlock Text="{Binding DateTime, StringFormat='{}{0:HH:mm}'}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
+                                    <!-- Hourly Data Comparison -->
+                                    <ItemsControl ItemsSource="{Binding comparisonHourlies}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <!-- Time -->
+                                                    <TextBlock Text="{Binding DateTime, StringFormat='{}{0:HH:mm}'}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
 
-                                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                                    <TextBlock Text="{Binding RecordedTemp, StringFormat='Mért hőmérséklet: {0:F2} °C'}" Margin="0,2"/>
-                                                    <TextBlock Text="{Binding ForecastTemp, StringFormat=' | Előrejelzett hőmérséklet: {0:F2} °C | '}" Margin="5,2"/>
-                                                    <TextBlock Text="{Binding TempDiff, StringFormat='Különbség: {0:F2} °C'}" Foreground="Red" Margin="5,2"/>
+                                                    <!-- Temperature -->
+                                                    <TextBlock Text="Hőmérséklet" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedTemperature, StringFormat='Mért: {0:F2} °C'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastTemperature, StringFormat=' | Előrejelzett: {0:F2} °C | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding TempDiff, StringFormat='Különbség: {0:F2} °C'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Wind Speed -->
+                                                    <TextBlock Text="Szélsebesség" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedWindSpeed, StringFormat='Mért: {0:F2} km/h'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastWindSpeed, StringFormat=' | Előrejelzett: {0:F2} km/h | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding WindDiff, StringFormat='Különbség: {0:F2} km/h'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Wind Direction -->
+                                                    <TextBlock Text="Szélirány" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedWindDirection, StringFormat='Mért: {0:F0}°'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastWindDirection, StringFormat=' | Előrejelzett: {0:F0}° | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding WindDirectionDiff, StringFormat='Különbség: {0:F0}°'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Direct Radiation -->
+                                                    <TextBlock Text="Direkt sugárzás" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedDirectRadiation, StringFormat='Mért: {0:F2} W/m²'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastDirectRadiation, StringFormat=' | Előrejelzett: {0:F2} W/m² | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding RadDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Diffuse Radiation -->
+                                                    <TextBlock Text="Szórt sugárzás (DHI)" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedDiffuseRadiation, StringFormat='Mért: {0:F2} W/m²'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastDiffuseRadiation, StringFormat=' | Előrejelzett: {0:F2} W/m² | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding DiffuseRadiationDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Direct Normal Irradiance -->
+                                                    <TextBlock Text="Direkt normál sugárzás (DNI)" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedDirectNormalIrradiance, StringFormat='Mért: {0:F2} W/m²'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastDirectNormalIrradiance, StringFormat=' | Előrejelzett: {0:F2} W/m² | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding DirectNormalIrradianceDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Diffuse Radiation Instant -->
+                                                    <TextBlock Text="Szórt sugárzás (azonnali)" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedDiffuseRadiationInstant, StringFormat='Mért: {0:F2} W/m²'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastDiffuseRadiationInstant, StringFormat=' | Előrejelzett: {0:F2} W/m² | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding DiffuseRadiationInstantDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
+
+                                                    <!-- Direct Normal Irradiance Instant -->
+                                                    <TextBlock Text="Direkt normál sugárzás (azonnali)" Margin="0,2" FontWeight="DemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                        <TextBlock Text="{Binding RecordedDirectNormalIrradianceInstant, StringFormat='Mért: {0:F2} W/m²'}" Margin="0,2"/>
+                                                        <TextBlock Text="{Binding ForecastDirectNormalIrradianceInstant, StringFormat=' | Előrejelzett: {0:F2} W/m² | '}" Margin="5,2"/>
+                                                        <TextBlock Text="{Binding DirectNormalIrradianceInstantDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
+                                                    </StackPanel>
                                                 </StackPanel>
-
-                                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                                    <TextBlock Text="{Binding RecordedWind, StringFormat='Mért szélsebesség: {0:F2} km/h'}" Margin="0,2"/>
-                                                    <TextBlock Text="{Binding ForecastWind, StringFormat=' | Előrejelzett szélsebesség: {0:F2} km/h | '}" Margin="5,2"/>
-                                                    <TextBlock Text="{Binding WindDiff, StringFormat='Különbség: {0:F2} km/h'}" Foreground="Red" Margin="5,2"/>
-                                                </StackPanel>
-
-                                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                                    <TextBlock Text="{Binding RecordedRad, StringFormat='Mért sugárzás: {0:F2} W/m²'}" Margin="0,2"/>
-                                                    <TextBlock Text="{Binding ForecastRad, StringFormat=' | Előrejelzett sugárzás: {0:F2} W/m² | '}" Margin="5,2"/>
-                                                    <TextBlock Text="{Binding RadDiff, StringFormat='Különbség: {0:F2} W/m²'}" Foreground="Red" Margin="5,2"/>
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
             </Grid>
         </Grid>
     </Grid>

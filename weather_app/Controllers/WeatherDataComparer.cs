@@ -38,13 +38,27 @@ public class WeatherDataComparer
                                   HourlyData = weatherTimes
                                       .Select((time, index) => new ComparisonHourly
                                       {
-                                          Time = weatherData.hourly.time[index], // Tároljuk a Time stringet
-                                          RecordedTemp = weatherData.hourly.temperature_2m[index],
-                                          RecordedWind = weatherData.hourly.wind_speed_10m[index],
-                                          RecordedRad = weatherData.hourly.direct_radiation[index],
-                                          ForecastTemp = forecastData.hourly.temperature_2m[index],
-                                          ForecastWind = forecastData.hourly.wind_speed_10m[index],
-                                          ForecastRad = forecastData.hourly.direct_radiation[index]
+                                          Time = weatherData.hourly.time[index],
+
+                                          // Mért értékek
+                                          RecordedTemperature = weatherData.hourly.temperature_2m[index],
+                                          RecordedWindSpeed = weatherData.hourly.wind_speed_10m[index],
+                                          RecordedDirectRadiation = weatherData.hourly.direct_radiation[index],
+                                          RecordedWindDirection = weatherData.hourly.wind_direction_10m[index],
+                                          RecordedDiffuseRadiation = weatherData.hourly.diffuse_radiation[index],
+                                          RecordedDirectNormalIrradiance = weatherData.hourly.direct_normal_irradiance[index],
+                                          RecordedDiffuseRadiationInstant = weatherData.hourly.diffuse_radiation_instant[index],
+                                          RecordedDirectNormalIrradianceInstant = weatherData.hourly.direct_normal_irradiance_instant[index],
+
+                                          // Előrejelzett értékek
+                                          ForecastTemperature = forecastData.hourly.temperature_2m[index],
+                                          ForecastWindSpeed = forecastData.hourly.wind_speed_10m[index],
+                                          ForecastDirectRadiation = forecastData.hourly.direct_radiation[index],
+                                          ForecastWindDirection = forecastData.hourly.wind_direction_10m[index],
+                                          ForecastDiffuseRadiation = forecastData.hourly.diffuse_radiation[index],
+                                          ForecastDirectNormalIrradiance = forecastData.hourly.direct_normal_irradiance[index],
+                                          ForecastDiffuseRadiationInstant = forecastData.hourly.diffuse_radiation_instant[index],
+                                          ForecastDirectNormalIrradianceInstant = forecastData.hourly.direct_normal_irradiance_instant[index],
                                       })
                                       .Where(hourly => forecastTimes.Contains(hourly.DateTime)) // Csak egyező időpontok
                                       .ToList()
@@ -53,14 +67,27 @@ public class WeatherDataComparer
         // Létrehozzuk a ComparisonData listát
         List<ComparisonData> comparisonData = new List<ComparisonData>();
 
-        foreach (var record in matchingRecords)
+       foreach (var record in matchingRecords)
+{
+    var coordinateParts = record.Coordinate.Split(' '); // Szétválasztás szóközzel
+    if (coordinateParts.Length == 2 &&
+        double.TryParse(coordinateParts[0], out double latitude) &&
+        double.TryParse(coordinateParts[1], out double longitude))
+    {
+        comparisonData.Add(new ComparisonData
         {
-            comparisonData.Add(new ComparisonData
-            {
-                Coordinate = record.Coordinate,
-                comparisonHourlies = record.HourlyData
-            });
-        }
+            Latitude = latitude,
+            Longitude = longitude,
+            comparisonHourlies = record.HourlyData
+        });
+    }
+    else
+    {
+        // Hiba esetén kezelheted, pl. logolás vagy hibaüzenet:
+        Console.WriteLine($"Hibás koordináta: {record.Coordinate}");
+    }
+}
+
 
         return comparisonData;
     }
@@ -77,15 +104,29 @@ public class WeatherDataComparer
 
         foreach (var group in groupedCoordinates)
         {
-            // Az egyes koordinátákhoz hozzáadjuk az óránkénti adatokat
-            var comparisonDataForCoordinate = new ComparisonData
+            // A group.Key érték szétválasztása a Latitude és Longitude értékekhez
+            var coordinateParts = group.Key.Split(' ');
+            if (coordinateParts.Length == 2 &&
+                double.TryParse(coordinateParts[0], out double latitude) &&
+                double.TryParse(coordinateParts[1], out double longitude))
             {
-                Coordinate = group.Key,
-                comparisonHourlies = group.SelectMany(d => d.comparisonHourlies).ToList()
-            };
+                // Az egyes koordinátákhoz hozzáadjuk az óránkénti adatokat
+                var comparisonDataForCoordinate = new ComparisonData
+                {
+                    Latitude = latitude,
+                    Longitude = longitude,
+                    comparisonHourlies = group.SelectMany(d => d.comparisonHourlies).ToList()
+                };
 
-            groupedData.Add(comparisonDataForCoordinate);
+                groupedData.Add(comparisonDataForCoordinate);
+            }
+            else
+            {
+                // Hiba kezelése, ha a koordináta nem érvényes
+                Console.WriteLine($"Hibás koordináta: {group.Key}");
+            }
         }
+
 
         return groupedData;
     }
@@ -115,7 +156,12 @@ public class WeatherDataComparer
                         time = record.Elements("Time").Select(x => x.Value).ToList(),
                         temperature_2m = record.Elements("Temperature").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
                         wind_speed_10m = record.Elements("WindSpeed").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
-                        direct_radiation = record.Elements("Radiation").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList()
+                        direct_radiation = record.Elements("DirectRadiation").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
+                        wind_direction_10m = record.Elements("WindDirection").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
+                        diffuse_radiation = record.Elements("DiffuseRadiation").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
+                        direct_normal_irradiance = record.Elements("DirectNormalIrradiance").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
+                        diffuse_radiation_instant = record.Elements("DiffuseRadiationInstant").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList(),
+                        direct_normal_irradiance_instant = record.Elements("DirectNormalIrradianceInstant").Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToList()
                     }
                 };
 

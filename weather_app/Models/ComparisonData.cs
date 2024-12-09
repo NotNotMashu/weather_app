@@ -1,31 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace weather_app.Models
+﻿namespace weather_app.Models
 {
     public class ComparisonData
     {
-        public string Coordinate { get; set; }
+        //public string Coordinate { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         public List<ComparisonHourly> comparisonHourlies { get; set; }
+        public string Coordinate => $"{Latitude:F2} {Longitude:F2}";
     }
 
     public class ComparisonHourly
     {
         public string Time { get; set; }
         public DateTime DateTime => DateTime.Parse(Time);
-        public double RecordedTemp { get; set; }
-        public double RecordedWind { get; set; }
-        public double RecordedRad { get; set; }
-        public double ForecastTemp { get; set; }
-        public double ForecastWind { get; set; }
-        public double ForecastRad { get; set; }
+
+        // Mért értékek
+        public double RecordedTemperature { get; set; }
+        public double RecordedWindSpeed { get; set; }
+        public double RecordedDirectRadiation { get; set; }
+        public double RecordedWindDirection { get; set; }
+        public double RecordedDiffuseRadiation { get; set; }
+        public double RecordedDirectNormalIrradiance { get; set; }
+        public double RecordedDiffuseRadiationInstant { get; set; }
+        public double RecordedDirectNormalIrradianceInstant { get; set; }
+
+        // Előrejelzett értékek
+        public double ForecastTemperature { get; set; }
+        public double ForecastWindSpeed { get; set; }
+        public double ForecastDirectRadiation { get; set; }
+        public double ForecastWindDirection { get; set; }
+        public double ForecastDiffuseRadiation { get; set; }
+        public double ForecastDirectNormalIrradiance { get; set; }
+        public double ForecastDiffuseRadiationInstant { get; set; }
+        public double ForecastDirectNormalIrradianceInstant { get; set; }
 
         // Különbségek kiszámítása
-        public double TempDiff => RecordedTemp - ForecastTemp; 
-        public double WindDiff => RecordedWind - ForecastWind; 
-        public double RadDiff => RecordedRad - ForecastRad;
+        public double TempDiff => RecordedTemperature - ForecastTemperature;
+        public double WindDiff => RecordedWindSpeed - ForecastWindSpeed;
+        public double RadDiff => RecordedDirectRadiation - ForecastDirectRadiation;
+        public double WindDirectionDiff => RecordedWindDirection - ForecastWindDirection;
+        public double DiffuseRadiationDiff => RecordedDiffuseRadiation - ForecastDiffuseRadiation;
+        public double DirectNormalIrradianceDiff => RecordedDirectNormalIrradiance - ForecastDirectNormalIrradiance;
+        public double DiffuseRadiationInstantDiff => RecordedDiffuseRadiationInstant - ForecastDiffuseRadiationInstant;
+        public double DirectNormalIrradianceInstantDiff => RecordedDirectNormalIrradianceInstant - ForecastDirectNormalIrradianceInstant;
     }
 }
