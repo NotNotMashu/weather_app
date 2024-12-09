@@ -55,14 +55,19 @@ public class XmlForecastDataHandler
             // Csak 6:00, 12:00 és 18:00
             if (hour == 6 || hour == 12 || hour == 18)
             {
-                XElement recordElement = new XElement("Record",
+                    XElement recordElement = new XElement("Record",
                     new XElement("Provider", provider),
                     new XElement("Latitude", latitude),
                     new XElement("Longitude", longitude),
                     new XElement("Time", weatherData.hourly.time[i]),
                     new XElement("Temperature", weatherData.hourly.temperature_2m[i]),
                     new XElement("WindSpeed", weatherData.hourly.wind_speed_10m[i]),
-                    new XElement("Radiation", weatherData.hourly.direct_radiation[i])
+                    new XElement("WindDirection", weatherData.hourly.wind_direction_10m[i]),
+                    new XElement("DirectRadiation", weatherData.hourly.direct_radiation[i]),
+                    new XElement("DiffuseRadiation", weatherData.hourly.diffuse_radiation[i]), // DHI
+                    new XElement("DirectNormalIrradiance", weatherData.hourly.direct_normal_irradiance[i]), // DNI
+                    new XElement("DiffuseRadiationInstant", weatherData.hourly.diffuse_radiation_instant[i]), // DHI Instant
+                    new XElement("DirectNormalIrradianceInstant", weatherData.hourly.direct_normal_irradiance_instant[i]) //DNI Instant
                 );
 
                 doc.Root.Add(recordElement);

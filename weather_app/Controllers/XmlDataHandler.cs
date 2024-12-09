@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using weather_app.ViewModels;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace weather_app.Services
 {
@@ -58,14 +59,19 @@ namespace weather_app.Services
                 if (hour == 6 || hour == 12 || hour == 18)
                 {
                     XElement recordElement = new XElement("Record",
-                        new XElement("Provider", provider),
-                        new XElement("Latitude", latitude),
-                        new XElement("Longitude", longitude),
-                        new XElement("Time", weatherData.hourly.time[i]),
-                        new XElement("Temperature", weatherData.hourly.temperature_2m[i]),
-                        new XElement("WindSpeed", weatherData.hourly.wind_speed_10m[i]),
-                        new XElement("Radiation", weatherData.hourly.direct_radiation[i])
-                    );
+                    new XElement("Provider", provider),
+                    new XElement("Latitude", latitude),
+                    new XElement("Longitude", longitude),
+                    new XElement("Time", weatherData.hourly.time[i]),
+                    new XElement("Temperature", weatherData.hourly.temperature_2m[i]),
+                    new XElement("WindSpeed", weatherData.hourly.wind_speed_10m[i]),
+                    new XElement("WindDirection", weatherData.hourly.wind_direction_10m[i]),
+                    new XElement("DirectRadiation", weatherData.hourly.direct_radiation[i]),
+                    new XElement("DiffuseRadiation", weatherData.hourly.diffuse_radiation[i]), // DHI
+                    new XElement("DirectNormalIrradiance", weatherData.hourly.direct_normal_irradiance[i]), // DNI
+                    new XElement("DiffuseRadiationInstant", weatherData.hourly.diffuse_radiation_instant[i]), // DHI Instant
+                    new XElement("DirectNormalIrradianceInstant", weatherData.hourly.direct_normal_irradiance_instant[i]) //DNI Instant
+                );
 
                     doc.Root.Add(recordElement);
                 }
@@ -93,18 +99,33 @@ namespace weather_app.Services
                 string time = record.Element("Time")?.Value ?? "Unknown";
                 string temperatureStr = record.Element("Temperature")?.Value ?? "0";
                 string windSpeedStr = record.Element("WindSpeed")?.Value ?? "0";
-                string radiationStr = record.Element("Radiation")?.Value ?? "0";
+                string windDirectionStr = record.Element("WindDirection")?.Value ?? "0";
+                string directRadiationStr = record.Element("DirectRadiation")?.Value ?? "0";
+                string diffuseRadiationStr = record.Element("DiffuseRadiation")?.Value ?? "0";
+                string directNormalIrradianceStr = record.Element("DirectNormalIrradiance")?.Value ?? "0";
+                string diffuseRadiationInstantStr = record.Element("DiffuseRadiationInstant")?.Value ?? "0";
+                string directNormalIrradianceInstantStr = record.Element("DirectNormalIrradianceInstant")?.Value ?? "0";
 
-                double temperature = double.TryParse(temperatureStr, out double temp) ? temp : 0;
-                double windSpeed = double.TryParse(windSpeedStr, out double wind) ? wind : 0;
-                double radiation = double.TryParse(radiationStr, out double rad) ? rad : 0;
+                double temperature = double.TryParse(temperatureStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double temp) ? temp : 0;
+                double windSpeed = double.TryParse(windSpeedStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double wind) ? wind : 0;
+                double windDirection = double.TryParse(windDirectionStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double direction) ? direction : 0;
+                double directRadiation = double.TryParse(directRadiationStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double directRad) ? directRad : 0;
+                double diffuseRadiation = double.TryParse(diffuseRadiationStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double diffuseRad) ? diffuseRad : 0;
+                double directNormalIrradiance = double.TryParse(directNormalIrradianceStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double dni) ? dni : 0;
+                double diffuseRadiationInstant = double.TryParse(diffuseRadiationInstantStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double diffuseInstant) ? diffuseInstant : 0;
+                double directNormalIrradianceInstant = double.TryParse(directNormalIrradianceInstantStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double dniInstant) ? dniInstant : 0;
 
                 HourlyData hourlyData = new HourlyData
                 {
                     time = new List<string> { time },
                     temperature_2m = new List<double> { temperature },
                     wind_speed_10m = new List<double> { windSpeed },
-                    direct_radiation = new List<double> { radiation }
+                    wind_direction_10m = new List<double> { windDirection },
+                    direct_radiation = new List<double> { directRadiation },
+                    diffuse_radiation = new List<double> { diffuseRadiation },
+                    direct_normal_irradiance = new List<double> { directNormalIrradiance },
+                    diffuse_radiation_instant = new List<double> { diffuseRadiationInstant },
+                    direct_normal_irradiance_instant = new List<double> { directNormalIrradianceInstant }
                 };
 
                 WeatherData weatherData = new WeatherData
@@ -133,7 +154,7 @@ namespace weather_app.Services
 
             try
             {
-                var allRecords = GetAllRecords(); // Get the list of WeatherData objects
+                var allRecords = GetAllRecords();
 
                 // Szűrés koordinátákra
                 var coordinateFilteredRecords = (!startLatitude.Equals("skip"))
@@ -293,7 +314,5 @@ namespace weather_app.Services
             }
             return weatherRecords;
         }
-
-
     }
 }

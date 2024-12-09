@@ -19,7 +19,7 @@
         <Button Content="Előrejelzés, múltbéli összehasonlítás" HorizontalAlignment="Center" Margin="0,0,0,230" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Comparison_Window"/>
         <Button Content="Előrejelzés megtekintése" HorizontalAlignment="Center" Margin="0,0,0,190" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Forecast_Window"/>
         <Button Content="Konkrét műltbéli adat keresése" HorizontalAlignment="Center" Margin="0,0,0,150" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Detailed_Historical_Window"/>
-        <Button Content="Múltbéli adatok listája" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
+        <Button Visibility="Collapsed" Content="Múltbéli adatok listája" HorizontalAlignment="Center" Margin="0,0,0,110" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Show_Historical_Window"/>
         <Button Content="Műltbéli adatok letöltése" HorizontalAlignment="Center" Margin="0,0,0,70" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Click="Download_Data_Click"/>
         <Button Content="Bezárás" HorizontalAlignment="Center" Margin="0,0,0,30" VerticalAlignment="Bottom" Grid.Column="0" Style="{StaticResource ButtonStyle}" Foreground="Red" Click="Close_Button_Click"/>
 

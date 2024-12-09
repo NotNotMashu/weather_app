@@ -6,14 +6,14 @@
              xmlns:local="clr-namespace:weather_app.Views"
              xmlns:conv="clr-namespace:weather_app.Views" 
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="720">
+             d:DesignHeight="450" d:DesignWidth="1000">
 
 
     <Grid>
-        <Grid Margin="10,20,10,20" HorizontalAlignment="Center">
+        <Grid Margin="10,10,10,10" HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="600"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="700"/>
             </Grid.ColumnDefinitions>
 
             <!-- Első oszlop -->
@@ -69,26 +69,32 @@
 
                 <Button x:Name="Search" Content="Keresés" Grid.Row="2" Margin="50,5,50,5" Click="FilterButton_Click"/>
                 <!-- Lista -->
-                <Grid Grid.Row="3" HorizontalAlignment="Stretch">
-                    <ListView x:Name="ResultListView" Grid.Row="2" Margin="5">
+                <Grid Grid.Row="3" HorizontalAlignment="Stretch" Margin="5">
+                    <ListView x:Name="ResultListView" VirtualizingPanel.IsVirtualizing="True" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="5">
-                                    <!-- Koordináta, csak egyszer jelenik meg -->
-                                    <TextBlock Text="{Binding coordinate}" FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5"/>
-
-                                    <ItemsControl ItemsSource="{Binding hourly}">
+                                <StackPanel Margin="2">
+                                    <!-- Koordináta -->
+                                    <TextBlock FontWeight="Bold" FontSize="14" Foreground="Blue" Margin="0,0,0,5">
+                                    <Run Text="{Binding Latitude}" />
+                                    <Run Text=" " />
+                                    <Run Text="{Binding Longitude}" />
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding HourlyDataList}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel>
                                                     <!-- Óra -->
-                                                    <TextBlock Text="{Binding time}" FontWeight="Bold" FontSize="14" Margin="0,0,0,2"/>
-                                                    <!-- Hőmérséklet -->
-                                                    <TextBlock Text="{Binding temperature_2m, StringFormat='Hőmérséklet: {0} °C'}" Margin="0,2"/>
-                                                    <!-- Szélsebesség -->
-                                                    <TextBlock Text="{Binding wind_speed_10m, StringFormat='Szélsebesség: {0} km/h'}" Margin="0,2"/>
-                                                    <!-- Sugárzás -->
-                                                    <TextBlock Text="{Binding direct_radiation, StringFormat='Sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding Time}" FontWeight="Bold" FontSize="12" Margin="0,0,0,2"/>
+                                                    <!-- Értékek -->
+                                                    <TextBlock Text="{Binding Temperature, StringFormat='Hőmérséklet: {0} °C'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding WindSpeed, StringFormat='Szélsebesség: {0} km/h'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding WindDirection, StringFormat='Szélirány: {0} °'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding DirectRadiation, StringFormat='Direkt sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding DiffuseRadiation, StringFormat='Diffúz sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding DirectNormalIrradiance, StringFormat='Direkt normál sugárzás: {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding DiffuseRadiationInstant, StringFormat='Diffúz sugárzás (instant): {0} W/m²'}" Margin="0,2"/>
+                                                    <TextBlock Text="{Binding DirectNormalIrradianceInstant, StringFormat='Direkt normál sugárzás (instant): {0} W/m²'}" Margin="0,2"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

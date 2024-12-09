@@ -28,7 +28,7 @@ namespace weather_app.Services
         private readonly XmlForecastDataHandler _xmlForecastDataHandler;
         private string apiForecastPart1 = "https://api.open-meteo.com/v1/forecast?latitude=";
         private string apiForecastPart2 = "&longitude=";
-        private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney&forecast_days=15";
+        private string apiForecastPart3 = "&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,direct_radiation,diffuse_radiation,direct_normal_irradiance,diffuse_radiation_instant,direct_normal_irradiance_instant&timezone=auto&forecast_days=15";
         string openWeatherMapKey, weatherStackKey, weatherApiKey;
         private string _weatherIconUrl;
         public string WeatherIconUrl
@@ -163,8 +163,8 @@ namespace weather_app.Services
         {
             string stringLat = latitude.ToString().Replace(',', '.');
             string stringLong = longitude.ToString().Replace(",", ".");
-            string apiUrl = $"https://archive-api.open-meteo.com/v1/archive?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
-            string apiUrlForecast = $"https://historical-forecast-api.open-meteo.com/v1/forecast?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,direct_radiation&timezone=Australia%2FSydney";
+            string apiUrl = $"https://archive-api.open-meteo.com/v1/archive?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,direct_radiation,diffuse_radiation,direct_normal_irradiance,diffuse_radiation_instant,direct_normal_irradiance_instant&timezone=auto";
+            string apiUrlForecast = $"https://historical-forecast-api.open-meteo.com/v1/forecast?latitude={stringLat}&longitude={stringLong}&start_date={year}-08-25&end_date={year}-08-31&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,direct_radiation,diffuse_radiation,direct_normal_irradiance,diffuse_radiation_instant,direct_normal_irradiance_instant&timezone=auto";
             try
             {
                 string jsonResponse = await GetWeatherDataAsync(apiUrl);

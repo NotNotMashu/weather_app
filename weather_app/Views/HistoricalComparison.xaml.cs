@@ -45,23 +45,25 @@ namespace weather_app.Views
             if (int.TryParse(DayBox.Text, out int selectedDay) &&
                 int.TryParse(YearBox.Text, out int selectedYear))
             {
-                // Filter and group the data by Coordinate
                 var groupedData = comparisonData
-                    .Select(data => new ComparisonData
-                    {
-                        Coordinate = data.Coordinate,
-                        comparisonHourlies = data.comparisonHourlies
-                            .Where(hourly => hourly.DateTime.Day == selectedDay && hourly.DateTime.Year == selectedYear)
-                            .ToList()
-                    })
-                    .Where(data => data.comparisonHourlies.Any()) // Only keep coordinates with relevant data
-                    .GroupBy(data => data.Coordinate)  // Group by Coordinate
-                    .Select(group => new ComparisonData
-                    {
-                        Coordinate = group.Key,
-                        comparisonHourlies = group.SelectMany(g => g.comparisonHourlies).ToList()
-                    })
-                    .ToList();
+    .Select(data => new ComparisonData
+    {
+        Latitude = data.Latitude, 
+        Longitude = data.Longitude,
+        comparisonHourlies = data.comparisonHourlies
+            .Where(hourly => hourly.DateTime.Day == selectedDay && hourly.DateTime.Year == selectedYear)
+            .ToList()
+    })
+    .Where(data => data.comparisonHourlies.Any())
+    .GroupBy(data => new { data.Latitude, data.Longitude }) // Csoportosítás Latitude és Longitude alapján
+    .Select(group => new ComparisonData
+    {
+        Latitude = group.Key.Latitude,
+        Longitude = group.Key.Longitude,
+        comparisonHourlies = group.SelectMany(g => g.comparisonHourlies).ToList()
+    })
+    .ToList();
+
 
                 if (groupedData.Any())
                 {
